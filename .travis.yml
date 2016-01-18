@@ -3,5 +3,7 @@ dist: trusty
 
 language: cpp
 
+compiler: gcc
+
 script:
 - ./run-ci.sh
