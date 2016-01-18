@@ -1,9 +1,9 @@
 SRC=$(wildcard test/*.cpp)
 
-LIBS = -lgtest -lpthread
+LIBS = -lgtest -lpthread -lmordor -lssl -lcrypto  -lboost_system  -lboost_regex -lboost_thread
 
 a.out: $(SRC)
-	g++ -o $@ $^  $(LIBS)
+	g++ -O0 -g  -o $@ $^  $(LIBS)
 
 clean:
 	rm -rf a.out
