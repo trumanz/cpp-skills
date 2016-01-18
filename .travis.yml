@@ -5,5 +5,8 @@ language: cpp
 
 compiler: gcc
 
+before_script:
+-  apt-get install -y ragel libboost-dev
+
 script:
 - ./run-ci.sh
