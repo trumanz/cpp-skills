@@ -31,9 +31,9 @@ public:
           char buf[100];
           read_count += ::read(sockets[0], buf, sizeof(buf));
           this->tid = boost::this_thread::get_id();
+          MORDOR_LOG_DEBUG(Log::root()) <<  " read on  "  << this->getReadFd() ;
     }
     void write(size_t num){
-         MORDOR_LOG_DEBUG(Log::root()) <<  " read on  "  << this->getReadFd() ;
          std::vector<char> buf(num, 'a');
          ::write(sockets[1], buf.data(), buf.size());
     }
@@ -47,29 +47,28 @@ private:
 
 //on linux Mordor::IOManager user epoll
 TEST(IOManager, event) {
-   Log::root()->level(Log::TRACE);
-   Log::root()->addSink( LogSink::ptr(new StdoutLogSink));
+//   Log::root()->level(Log::TRACE);
+//   Log::root()->addSink( LogSink::ptr(new StdoutLogSink));
    //IOManager(size_t threads = 1, bool useCaller = true, bool autoStart = true);
    IOManager iomanager;
    const size_t conn_num = 5;
    std::vector<boost::shared_ptr<Conn> > conns; 
    conns.reserve(conn_num);
+
+   //register event
    for(size_t i = 0 ; i < conn_num; i++){
        boost::shared_ptr<Conn> conn(new Conn);
        iomanager.registerEvent(conn->getReadFd(), IOManager::READ,  boost::bind(&Conn::read, conn));
        conns.push_back(conn);
    }
-   for(size_t i = 0; i < conns.size(); i++) {
-      MORDOR_LOG_DEBUG(Log::root()) <<  " write on for  "  << conns[i]->getReadFd();
-      conns[i]->write(100);
-   }
-   sleep(2);
 
+   //write 
    for(size_t i = 0; i < conns.size(); i++) {
       MORDOR_LOG_DEBUG(Log::root()) <<  " write on for  "  << conns[i]->getReadFd();
       conns[i]->write(100);
    }
 
+   //stop will give epoll faber  achange to runing
    iomanager.stop();
 
    for(size_t i = 0; i < conns.size(); i++) {
