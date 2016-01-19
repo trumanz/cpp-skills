@@ -14,46 +14,75 @@ using namespace Mordor;
 class Worker : boost::noncopyable {
 public:
     int count;
-    boost::thread::id id;
+    boost::thread::id tid;
     Worker() {
        count = 0;
     }
-    void run(string message){
-       int i = 5;
-       while(i--) {
+    void run(int count){
+       while(count--) {
            //printf("%s\n", message.c_str());
-           count++;
+           this->count++;
            Scheduler::yield();
        }
-       id = boost::this_thread::get_id();
+       this->tid = boost::this_thread::get_id();
    }
-   
 };
 
 TEST(WorkPool, multi_woker_in_one_thread) {
  
-   boost::thread::id id =  boost::this_thread::get_id();
-   Worker w1;
-   Worker w2;
-   Worker w3;
-
+   boost::thread::id tid =  boost::this_thread::get_id();
+   size_t worker_num = 1000;
+   std::vector<boost::shared_ptr<Worker> > workers;
+   workers.reserve(worker_num);
    {
      //pool will call stop on deconstructor funciton 
      //create one thread for the pool
      size_t threads = 1;
      bool useCaller = false;
      WorkerPool  pool(threads, useCaller);
-     pool.schedule(boost::bind(&Worker::run, &w1, "xxx"));
-     pool.schedule(boost::bind(&Worker::run, &w2, "yyy"));
-     pool.schedule(boost::bind(&Worker::run, &w3, "zzz"));
+     for(size_t i = 0 ; i  <  worker_num; i++){
+         boost::shared_ptr<Worker>  worker(new Worker());
+         workers.push_back(worker);
+         pool.schedule(boost::bind(&Worker::run, worker, i));
+     }
    }
 
-   EXPECT_EQ(w1.count,5);
-   EXPECT_EQ(w2.count,5);
-   EXPECT_EQ(w3.count,5);
+   for(size_t i = 0 ; i <  workers.size(); i++){
+           EXPECT_EQ(workers[i]->count, i);
+           EXPECT_NE(workers[i]->tid, tid);
+           if( i + 1 < workers.size()) EXPECT_EQ(workers[i]->tid, workers[i+1]->tid);
+   }
 
-
-   EXPECT_NE(id ,w1.id);
-   EXPECT_EQ(w2.id ,w1.id);
-   EXPECT_EQ(w2.id ,w3.id);
 }
+
+
+TEST(WorkPool, multi_woker_in_multi_thread) {
+ 
+   boost::thread::id tid =  boost::this_thread::get_id();
+   size_t worker_num = 1000;
+   std::vector<boost::shared_ptr<Worker> > workers;
+   workers.reserve(worker_num);
+   {
+     //pool will call stop on deconstructor funciton 
+     //create one thread for the pool
+     size_t threads = 2;
+     bool useCaller = false;
+     WorkerPool  pool(threads, useCaller);
+     for(size_t i = 0 ; i  <  worker_num; i++){
+         boost::shared_ptr<Worker>  worker(new Worker());
+         workers.push_back(worker);
+         pool.schedule(boost::bind(&Worker::run, worker, i));
+     }
+   }
+
+   set<boost::thread::id> tids;
+   for(size_t i = 0 ; i <  workers.size(); i++){
+           EXPECT_EQ(workers[i]->count, i);
+           EXPECT_NE(workers[i]->tid, tid);
+           tids.insert(workers[i]->tid);
+   }
+   EXPECT_EQ(tids.size(), 2);
+
+}
+
+
