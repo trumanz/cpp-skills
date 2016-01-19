@@ -9,4 +9,4 @@ clean:
 	rm -rf a.out
 
 test: a.out
-	./a.out 
+	./a.out  --gtest_filter=IOManager.*
