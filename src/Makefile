@@ -24,4 +24,4 @@ clean:
 	rm $(TARGET) $(OBJECTS)
 
 test: all
-	$(TARGET)
+	./$(TARGET)
