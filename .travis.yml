@@ -11,6 +11,7 @@ before_script:
 -  sudo apt-get install -y libboost-all-dev libevent-dev 
 -  sudo apt-get install -y libyaml-dev zlib1g-dev liblzma-dev 
 -  sudo apt-get install -y postgresql-server-dev-all 
+-  sudo apt-get install -y libsqlite3-dev
 -  ./prep-env.sh
 
 script:
