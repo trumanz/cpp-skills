@@ -11,6 +11,7 @@ using namespace std;
 using boost::multi_index_container;
 using namespace boost::multi_index;
 
+
 struct employee
 {
   int id;
@@ -33,15 +34,38 @@ typedef multi_index_container<
            ordered_non_unique< tag<name>, BOOST_MULTI_INDEX_MEMBER(employee, std::string, name) >,
            ordered_non_unique< tag<age>, BOOST_MULTI_INDEX_MEMBER(employee, int, age) > >
 > employee_set;
-           
 
-TEST(MultiIndex, basic) {
+
+TEST(boost_multi_index, hashed_unique_search) {
+   employee_set es;
+   es.insert(employee(0,"A", 31));
+   es.insert(employee(1,"B", 32 ));
+   es.insert(employee(2,"C", 32 ));
+
+   employee_set::iterator it;
+   it =   es.get<id>().find(1);
+   EXPECT_EQ(1, it->id);
+   EXPECT_EQ("B", it->name);
+
+   it =   es.get<id>().find(3);
+    
+   EXPECT_EQ(it, es.end());
+
+}
+
+TEST(boost_multi_index, hashed_unique_descard_new_obj_if_the_same_key) {
    employee_set es;
    
    es.insert(employee(0,"Joe", 31));
-   es.insert(employee(1,"Robert", 27));
-   es.insert(employee(2,"John", 50));
+   es.insert(employee(0,"Jack", 32 ));
 
+   EXPECT_EQ(1,  es.size());
+  
+   employee_set::iterator it = es.begin();
+ 
+   EXPECT_EQ(0,  it->id);
+   EXPECT_EQ("Joe",  it->name);
+   EXPECT_EQ(31,  it->age);
 
 }
 
