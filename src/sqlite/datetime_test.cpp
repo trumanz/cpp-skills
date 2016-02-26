@@ -10,6 +10,8 @@
 
 #include <sqlite3.h>
 
+#include "sqlite_helper.h"
+
 //table  id, name, price , time
 
 
@@ -32,26 +34,28 @@ TEST(sqlite, date_time) {
    ASSERT_EQ(SQLITE_OK, rc);
 
 
-   rc = sqlite3_exec(db, "INSERT INTO ware(id, time) values(1, 1)", NULL, NULL, NULL);
+//   rc = sqlite3_exec(db, "INSERT INTO ware(id, time) values(1, 1)", NULL, NULL, NULL);
+//   ASSERT_EQ(SQLITE_OK, rc);
+   rc = sqlite3_exec(db, "INSERT INTO ware(id, time) values(2, datetime('1970-01-01 00:00:02'))", NULL, NULL, NULL);
    ASSERT_EQ(SQLITE_OK, rc);
-   rc = sqlite3_exec(db, "INSERT INTO ware(id, time) values(2, 2)", NULL, NULL, NULL);
-   ASSERT_EQ(SQLITE_OK, rc);
-
-   rc = sqlite3_exec(db, "INSERT INTO ware(id, time) values(3, '1970-01-01 00:00:09')", NULL, NULL, NULL);
+   rc = sqlite3_exec(db, "INSERT INTO ware(id, time) values(3, datetime('1970-01-01 00:00:03'))", NULL, NULL, NULL);
    ASSERT_EQ(SQLITE_OK, rc);
 
 
+   std::vector< std::vector<boost::any> > rows;
 
-   //query all   
-   unsigned int count = 0;
-   //sqlite3_prepare_v2(db, "SELECT * FROM ware where time > '1970-01-01 00:00:00' ", -1, &pstmt, NULL);
-   sqlite3_prepare_v2(db, "SELECT * FROM ware where time > 2 ", -1, &pstmt, NULL);
-   while((rc=sqlite3_step(pstmt)) != SQLITE_DONE) {
-       ASSERT_EQ(SQLITE_ROW, rc);
-       count++; 
-   }
+   sqlite3_prepare_v2(db, "SELECT time FROM ware WHERE datetime(time) > datetime('1970-01-01 00:00:02') ", -1, &pstmt, NULL);
+   fetch_all_rows(pstmt, &rows); 
+   ASSERT_EQ(1, rows.size());
+   ASSERT_EQ(1, rows[0].size());
+   ASSERT_EQ("1970-01-01 00:00:03", boost::any_cast<std::string>(rows[0][0]) );
+   //ASSERT_EQ(5, boost::any_cast<int>(rows[1][0]) );
+   rows.clear();
    sqlite3_finalize(pstmt);
 
-   ASSERT_EQ(2, count);
+
+   rc = sqlite3_exec(db, "DROP TABLE ware", NULL, NULL, NULL);
+   ASSERT_EQ(SQLITE_OK, rc);
+   sqlite3_close(db);   
 }
 
