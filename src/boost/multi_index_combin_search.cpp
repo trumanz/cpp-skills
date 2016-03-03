@@ -48,13 +48,19 @@ typedef multi_index_container<
 
 TEST(boost_multi_index, combin_search) {
    FlightSet fs;
-   fs.insert(Flight(0, 10, "A") );
+   fs.insert(Flight(4, 50, "E") );
+   fs.insert(Flight(3, 40, "D") );
+   fs.insert(Flight(2, 30, "C") );
    fs.insert(Flight(1, 20, "B") );
-   fs.insert(Flight(2, 20, "B") );
-   fs.insert(Flight(2, 40, "D") );
+   fs.insert(Flight(0, 10, "A") );
 
    boost::multi_index::index<FlightSet, timelocation >::type::iterator it0, it1;
-   boost::tie(it0, it1) = fs.get<timelocation>().equal_range(boost::make_tuple(20, "B"));
+   //boost::tie(it0, it1) = fs.get<timelocation>().equal_range(boost::make_tuple(20, "B"));
+
+   //timestamp in [10,40], location in ["A", "C"]
+   it0 = fs.get<timelocation>().lower_bound(boost::make_tuple(10, "A"));
+   it1 = fs.get<timelocation>().upper_bound(boost::make_tuple(40, "C"));
+
 
    for(; it0 != it1; it0++){
        printf("%d\n", it0->id);
