@@ -27,9 +27,9 @@ public:
        char *err_msg;
        rc = sqlite3_exec(db, sql_create_table, NULL, NULL, &err_msg); 
        assert(rc == SQLITE_OK); 
-       rc = sqlite3_exec(db, "CREATE INDEX priceIndex ON ware(price)", NULL, NULL, &err_msg); 
+       //rc = sqlite3_exec(db, "CREATE INDEX priceIndex ON ware(price)", NULL, NULL, &err_msg); 
        assert(rc == SQLITE_OK); 
-       rc = sqlite3_exec(db, "CREATE INDEX timeIndex ON ware(time)", NULL, NULL, &err_msg); 
+       //rc = sqlite3_exec(db, "CREATE INDEX timeIndex ON ware(time)", NULL, NULL, &err_msg); 
        assert(rc == SQLITE_OK); 
        rc = sqlite3_exec(db, "CREATE INDEX price_time_Index ON ware(price, time)", NULL, NULL, &err_msg); 
        assert(rc == SQLITE_OK); 
@@ -39,9 +39,14 @@ public:
         if(db)sqlite3_close(db);
    }
 
+   void startTransaction() {
+        sqlite3_exec(db, "BEGIN", NULL, NULL, NULL);
+   }
+   void commitTransaction() {
+        sqlite3_exec(db, "COMMIT", NULL, NULL, NULL);
+   }
 
    void insert(int id, const char *name, float price, time_t timestamp) { 
-        sqlite3_exec(db, "BEGIN", NULL, NULL, NULL);
         if(istmt == NULL) { 
              const char *sql_insert = "INSERT INTO ware(id, name, price, time) values(?1, ?2, ?3, ?4);";
              sqlite3_prepare_v2(db, sql_insert, -1, &istmt, NULL); 
@@ -53,7 +58,6 @@ public:
         int rc = sqlite3_step(istmt);
         assert(rc == SQLITE_DONE);
         sqlite3_reset(istmt);
-        sqlite3_exec(db, "COMMIT", NULL, NULL, NULL);
    }
 
   
@@ -122,23 +126,38 @@ public:
 TEST(sqlite, table_search) {
     SqliteWare sqlite_ware;
     MemoryWare mem_ware;
-    time_duration duration;
-    for(int base_price = 1,  base_time = 200, i = 0; i < 100*1000; i++) {
+    //time_duration duration;
+
+    int count = 100*1000;
+
+    ptime t1 =  microsec_clock::local_time();
+    for(int base_price = 1,  base_time = 200, i = 0; i < count; i++) {
          float  price = 0.0 + (base_price++)%487;
          time_t time  = (base_time++)%987;
          mem_ware.insert(i, "dummy", price, time);
-         //mem_ware.insert(i, "dummy", 0.0 + i, i);
+    }
+    printf("memeory insert used: %s\n", to_simple_string(microsec_clock::local_time() - t1).c_str());
+    t1 =  microsec_clock::local_time();
+
+    sqlite_ware.startTransaction();
+    for(int base_price = 1,  base_time = 200, i = 0; i < count; i++) {
+         float  price = 0.0 + (base_price++)%487;
+         time_t time  = (base_time++)%987;
          sqlite_ware.insert(i, "dummy", price, time);
     }
-    ptime t1 =  microsec_clock::local_time();
-    int rc1 =   mem_ware.query(200.0, 300.0, 100, 600);
-    duration = microsec_clock::local_time() - t1;
-    printf("memory search used: %s\n", to_simple_string(duration).c_str());
-
+    sqlite_ware.commitTransaction();
+    printf("sqlite insert used: %s\n", to_simple_string(microsec_clock::local_time() - t1).c_str());
     t1 =  microsec_clock::local_time();
+
+    int rc1 =   mem_ware.query(200.0, 300.0, 100, 600);
+    //duration = microsec_clock::local_time() - t1;
+    printf("memory search used: %s\n", to_simple_string(microsec_clock::local_time() - t1).c_str());
+    t1 =  microsec_clock::local_time();
+
     int rc2 =   sqlite_ware.query(200.0, 300.0, 100, 600);
-    duration = microsec_clock::local_time() - t1;
-    printf("sqlite search used: %s\n", to_simple_string(duration).c_str());
+    //duration = microsec_clock::local_time() - t1;
+    printf("sqlite search used: %s\n", to_simple_string(microsec_clock::local_time() - t1).c_str());
+    t1 =  microsec_clock::local_time();
 
     ASSERT_EQ(rc1, rc2);
 }
