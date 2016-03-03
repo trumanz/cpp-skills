@@ -31,6 +31,8 @@ public:
        assert(rc == SQLITE_OK); 
        rc = sqlite3_exec(db, "CREATE INDEX timeIndex ON ware(time)", NULL, NULL, &err_msg); 
        assert(rc == SQLITE_OK); 
+       rc = sqlite3_exec(db, "CREATE INDEX price_time_Index ON ware(price, time)", NULL, NULL, &err_msg); 
+       assert(rc == SQLITE_OK); 
    }
    ~SqliteWare() {
         if(istmt)sqlite3_finalize(istmt);
