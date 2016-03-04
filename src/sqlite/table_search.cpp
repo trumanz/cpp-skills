@@ -9,8 +9,15 @@
 using namespace boost::posix_time;
 //table  id, name, price , time
 
+class  Ware :  boost::noncopyable{
+public:
+   virtual void startTransaction() { }
+   virtual void commitTransaction() { }
+   virtual void  insert(int id, const char *name, float price, time_t timestamp) = 0;
+   virtual int query(float min_price, float max_price, time_t min_timestamp, time_t max_timestamp) = 0;
+};
 
-class  SqliteWare :  boost::noncopyable{
+class  SqliteWare :  public Ware{
 private:
     sqlite3 *db;
     sqlite3_stmt *istmt;
@@ -79,7 +86,7 @@ public:
 };
 
 
-class  MemoryWare :  boost::noncopyable{
+class  MemoryWare :  public Ware{
 private:
    class Row{
        public:
@@ -122,42 +129,35 @@ public:
 
 };
 
+int TableSearch(Ware* ware, std::string name) 
+{
+   
+    int count = 100*1000;
+    ptime t1 =  microsec_clock::local_time();
+
+    ware->startTransaction();
+    for(int base_price = 1,  base_time = 200, i = 0; i < count; i++) {
+         float  price = 0.0 + (base_price++)%487;
+         time_t time  = (base_time++)%987;
+         ware->insert(i, "dummy", price, time);
+    }
+    ware->commitTransaction();
+    printf("%s insert used: %s\n", name.c_str(), to_simple_string(microsec_clock::local_time() - t1).c_str());
+    t1 =  microsec_clock::local_time();
+
+    int rc2 =  ware->query(200.0, 300.0, 100, 600);
+    //duration = microsec_clock::local_time() - t1;
+    printf("%s search used: %s\n", name.c_str(), to_simple_string(microsec_clock::local_time() - t1).c_str());
+    t1 =  microsec_clock::local_time();
+    return rc2;
+}
 
 TEST(sqlite, table_search) {
     SqliteWare sqlite_ware;
     MemoryWare mem_ware;
-    //time_duration duration;
 
-    int count = 100*1000;
-
-    ptime t1 =  microsec_clock::local_time();
-    for(int base_price = 1,  base_time = 200, i = 0; i < count; i++) {
-         float  price = 0.0 + (base_price++)%487;
-         time_t time  = (base_time++)%987;
-         mem_ware.insert(i, "dummy", price, time);
-    }
-    printf("memeory insert used: %s\n", to_simple_string(microsec_clock::local_time() - t1).c_str());
-    t1 =  microsec_clock::local_time();
-
-    sqlite_ware.startTransaction();
-    for(int base_price = 1,  base_time = 200, i = 0; i < count; i++) {
-         float  price = 0.0 + (base_price++)%487;
-         time_t time  = (base_time++)%987;
-         sqlite_ware.insert(i, "dummy", price, time);
-    }
-    sqlite_ware.commitTransaction();
-    printf("sqlite insert used: %s\n", to_simple_string(microsec_clock::local_time() - t1).c_str());
-    t1 =  microsec_clock::local_time();
-
-    int rc1 =   mem_ware.query(200.0, 300.0, 100, 600);
-    //duration = microsec_clock::local_time() - t1;
-    printf("memory search used: %s\n", to_simple_string(microsec_clock::local_time() - t1).c_str());
-    t1 =  microsec_clock::local_time();
-
-    int rc2 =   sqlite_ware.query(200.0, 300.0, 100, 600);
-    //duration = microsec_clock::local_time() - t1;
-    printf("sqlite search used: %s\n", to_simple_string(microsec_clock::local_time() - t1).c_str());
-    t1 =  microsec_clock::local_time();
+    int rc1 = TableSearch(&sqlite_ware, "sqlite");
+    int rc2 = TableSearch(&mem_ware, "memory");
 
     ASSERT_EQ(rc1, rc2);
 }
