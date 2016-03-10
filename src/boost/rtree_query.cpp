@@ -20,7 +20,7 @@ public:
   }
   std::string tostr() {
       char buf[100];
-      sprintf(buf, "id=%d, h=%lu, w=%lu", id, heigth, width);
+      sprintf(buf, "id=%d, h=%u, w=%u", id, heigth, width);
       return buf;
   }
   int id;

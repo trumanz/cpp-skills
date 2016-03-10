@@ -1,7 +1,7 @@
 CC = g++
 LD = $(CC)
 CFLAGS = -c  -g -O0 -I./ 
-LDFLAGS = -L./  -lgtest  -lpthread -lmordor  -lboost_system -lboost_thread -lcrypto -lboost_regex -lsqlite3
+LDFLAGS = -L./  -lgtest  -lpthread -lmordor  -lboost_system -lboost_thread -lcrypto -lboost_regex -lsqlite3 -ljsoncpp
 
 
 TARGET = a.out
