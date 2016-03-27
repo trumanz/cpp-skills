@@ -29,7 +29,7 @@ TEST(jsoncpp, parse) {
    ss << getExampleJson();
    Json::Value root;
    Json::Reader reader;
-   //printf("parse, \n%s\n", ss.str().c_str());
+   printf("parse, \n%s\n", ss.str().c_str());
    bool parsingSuccessful = reader.parse(ss, root);
 
    if(!parsingSuccessful) {
@@ -74,6 +74,29 @@ TEST(jsoncpp, parse_not_exist) {
 }
 
 
+
+TEST(jsoncpp, path_parse) {
+
+   std::stringstream ss;
+   ss << getExampleJson();
+   Json::Value root;
+   Json::Reader reader;
+   //printf("parse, \n%s\n", ss.str().c_str());
+   bool parsingSuccessful = reader.parse(ss, root);
+
+   if(!parsingSuccessful) {
+        printf("Failed to parse, %s\n", reader.getFormatedErrorMessages().c_str());
+   }
+   ASSERT_EQ(parsingSuccessful, true);
+
+   Json::Path p("indent.length");
+   Json::Value v = p.resolve(root);
+   ASSERT_EQ(v.asInt(), 3);
+
+   Json::Path p2("indent.length_xx");
+   v = p2.resolve(root);
+   EXPECT_EQ(true, v.isNull());
+}
 
 
 
