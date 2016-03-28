@@ -1,0 +1,17 @@
+{
+	"name": "truman",
+	"age": 30,
+	"work_experience": [
+		"Eastsoft",
+		"Lucent",
+		"Ericsson",
+		"EMC"
+	],
+	"skills": [{
+		"language": "c++",
+		"grade": 7
+	}, {
+		"language": "R",
+		"grade": 0
+	}]
+}
