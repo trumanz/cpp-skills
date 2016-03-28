@@ -35,8 +35,25 @@ gtest(){
   fi
 }
 
+thrift() {
+   if [ -d googletest ]; then
+     echo "user donloaded googletest"
+   else
+      git clone https://github.com/apache/thrift.git \
+      && cd thrift &&  git checkout  0.9.3 \
+      && ./bootstrap.sh &&  ./configure --prefix=$INSTALL_DIR \
+      && make install
+      if [ $? != 0 ]; then
+        echo "Warning, TODO, fix this "
+      fi
+   fi
+}
+
 cd $BASE_DIR
 mordor_lib
 
 cd $BASE_DIR
 gtest
+
+cd $BASE_DIR
+thrift
