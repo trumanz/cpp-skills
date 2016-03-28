@@ -36,8 +36,8 @@ gtest(){
 }
 
 thrift() {
-   if [ -d googletest ]; then
-     echo "user donloaded googletest"
+   if [ -d thrift ]; then
+     echo "user donloaded thrift"
    else
       git clone https://github.com/apache/thrift.git \
       && cd thrift &&  git checkout  0.9.3 \
