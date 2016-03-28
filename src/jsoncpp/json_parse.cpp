@@ -96,6 +96,41 @@ TEST(jsoncpp, path_parse) {
    Json::Path p2("indent.length_xx");
    v = p2.resolve(root);
    EXPECT_EQ(true, v.isNull());
+
+   Json::Path p3("indent.length_xx.yy");
+   v = p3.resolve(root);
+   EXPECT_EQ(true, v.isNull());
+}
+
+
+
+TEST(jsoncpp, path_list) {
+
+   std::stringstream ss;
+   ss << getExampleJson();
+   Json::Value root;
+   Json::Reader reader;
+   //printf("parse, \n%s\n", ss.str().c_str());
+   bool parsingSuccessful = reader.parse(ss, root);
+
+   if(!parsingSuccessful) {
+        printf("Failed to parse, %s\n", reader.getFormatedErrorMessages().c_str());
+   }
+   ASSERT_EQ(parsingSuccessful, true);
+
+   Json::Path p("plug-ins");
+   Json::Value v = p.resolve(root);
+   ASSERT_EQ(v.size(), 3);
+
+   Json::Path p2("plug-ins_xx");
+   v = p2.resolve(root);
+   ASSERT_EQ(true,  v.isNull());
+
+   Json::Path p3("plug-ins_xx");
+   v = p3.resolve(root, "[]");
+   ASSERT_FALSE(v.isNull());
+   ASSERT_EQ(0,  v.size());
+
 }
 
 
