@@ -20,15 +20,29 @@ protected:
 };
 #endif
 
+class Contact {
+public:
+    Contact(){}
+    std::string email;
+    std::string phone;
+    void setORM(Mapper &mapper){
+          mapper.set("email", email);
+          mapper.set("phone", phone);
+    }
+
+};
+
 class Me {
 public:
     std::string name;
     int age;
+    Contact contact;
     std::list<std::string> likes;
    // std::list<Skill> skills;
     void setORM(Mapper &mapper){
           mapper.set("name", name);
           mapper.set("age", age);
+          mapper.set("contact", contact);
           mapper.set("likes", likes);
          // mapper.set("skillList",  skills);
     }
@@ -42,5 +56,7 @@ TEST(JsonROM, baisc){
      ASSERT_EQ(me->likes.size(), 2);
      ASSERT_EQ(me->likes.front(), "Batman");
      ASSERT_EQ(me->likes.back(), "Superman");
+     ASSERT_EQ(me->contact.email, "@com");
+     ASSERT_EQ(me->contact.phone, "123456");
 };
 

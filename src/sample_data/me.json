@@ -1,6 +1,11 @@
 {
 	"name": "truman",
 	"age": 30,
+        "contact": {
+            "email" : "@com",
+            "phone" : "123456"
+        },
+        
         "likes" : [
            "Batman",
            "Superman"

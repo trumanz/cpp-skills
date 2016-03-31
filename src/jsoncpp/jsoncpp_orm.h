@@ -25,6 +25,7 @@ public:
        T e;
        Mapper mapper(json, false);
        e.setORM(mapper);
+       return e;
     } 
 
     int get(Json::Value json, int*);
