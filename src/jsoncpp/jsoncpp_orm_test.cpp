@@ -23,15 +23,24 @@ protected:
 class Me {
 public:
     std::string name;
+    int age;
+    std::list<std::string> likes;
    // std::list<Skill> skills;
     void setORM(Mapper &mapper){
           mapper.set("name", name);
-          //mapper.set("skillList",  skills);
+          mapper.set("age", age);
+          mapper.set("likes", likes);
+         // mapper.set("skillList",  skills);
     }
 };
 
 TEST(JsonROM, baisc){
-     Me* me = JsonORM<Me>().get("{\"name\": \"truman\"}");
+     std::ifstream ifs("./sample_data/me.json",  std::ifstream::in);
+     Me* me = JsonORM<Me>().get(ifs);
      ASSERT_EQ(me->name ,"truman");
+     ASSERT_EQ(me->age ,30);
+     ASSERT_EQ(me->likes.size(), 2);
+     ASSERT_EQ(me->likes.front(), "Batman");
+     ASSERT_EQ(me->likes.back(), "Superman");
 };
 
