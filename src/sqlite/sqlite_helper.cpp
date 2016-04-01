@@ -18,7 +18,7 @@ void getcolumns(sqlite3_stmt* pstmt, std::vector<boost::any> *values) {
        values->resize(col_count, boost::any());
        for(int i = 0; i < col_count; i++) {
             int type = sqlite3_column_type(pstmt, i);
-            const char * columnName = sqlite3_column_name(pstmt, i);
+            //const char * columnName = sqlite3_column_name(pstmt, i);
 //            printf("%s, %d\n", columnName, type);
             switch(type) {
                 case SQLITE_INTEGER:

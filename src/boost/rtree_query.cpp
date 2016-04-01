@@ -60,7 +60,7 @@ TEST(boost_rtree, spatial_query) {
    boost::geometry::model::box<U64Point>  query_box(U64Point(0,0), U64Point(4,4));
    tree.query(boost::geometry::index::covered_by(query_box), std::back_inserter(results));   
 
-   for(int i = 0 ; i < results.size(); i++){
+   for(size_t i = 0 ; i < results.size(); i++){
        printf("%d\n", results[i].second);
    }   
 
