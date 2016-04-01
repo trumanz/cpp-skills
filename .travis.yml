@@ -17,4 +17,4 @@ before_script:
 -  ./prep-env.sh
 
 script:
-- ./run-all.sh
+-  env  OMP_NUM_THREADS=4  ./run-all.sh

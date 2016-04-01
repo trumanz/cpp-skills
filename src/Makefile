@@ -1,6 +1,7 @@
 CC = g++
 LD = $(CC)
 CFLAGS = -c  -g -O0 -I./  -Wall
+CFLAGS += -fopenmp
 
 LDFLAGS = -L./  -lgtest  -lpthread 
 LDFLAGS +=  -lmordor
@@ -9,6 +10,7 @@ LDFLAGS +=  -lcrypto
 LDFLAGS +=  -lsqlite3 
 LDFLAGS +=  -ljsoncpp
 LDFLAGS +=  -lthrift
+LDFLAGS += -fopenmp
 
 
 TARGET = a.out
