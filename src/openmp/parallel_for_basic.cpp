@@ -31,7 +31,7 @@ TEST(openmp, paralle_for_basic)
     }
     time_duration  duration =   microsec_clock::local_time() - t1;
 
-    printf("duration: %d\n", duration.total_milliseconds());
+    printf("duration: %ld\n", duration.total_milliseconds());
     ASSERT_NEAR(duration.total_milliseconds() , largest_task, 100);
 
 }
