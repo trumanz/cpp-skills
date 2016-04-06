@@ -33,12 +33,12 @@ public:
 
 
     template<typename T>
-    void set(std::string name, T& v){
+    void orm(std::string name, T& v){
          v = get(json[name], &v);
     }
 
     template<typename T>
-    void set(std::string name, std::list<T>& v){
+    void orm(std::string name, std::list<T>& v){
             for(int i = 0; i  < json[name].size(); i++) {
                  T e = get(json[name][i], &e);
                  v.push_back(e);

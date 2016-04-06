@@ -15,7 +15,7 @@ public:
     std::string language;
 protected:
     void setORM(Mapper &mapper){
-          mapper.set("language", language);
+          mapper.orm("language", language);
     }
 };
 #endif
@@ -26,8 +26,8 @@ public:
     std::string email;
     std::string phone;
     void setORM(Mapper &mapper){
-          mapper.set("email", email);
-          mapper.set("phone", phone);
+          mapper.orm("email", email);
+          mapper.orm("phone", phone);
     }
 
 };
@@ -37,8 +37,8 @@ public:
     std::string language;
     int grade;
     void setORM(Mapper &mapper) {
-          mapper.set("language", language);
-          mapper.set("grade", grade);
+          mapper.orm("language", language);
+          mapper.orm("grade", grade);
     }
 };
 
@@ -50,12 +50,12 @@ public:
     std::list<std::string> likes;
     std::list<Skill> skills;
     void setORM(Mapper &mapper){
-          mapper.set("name", name);
-          mapper.set("age", age);
-          mapper.set("contact", contact);
-          mapper.set("likes", likes);
-          mapper.set("skills", skills);
-         // mapper.set("skillList",  skills);
+          mapper.orm("name", name);
+          mapper.orm("age", age);
+          mapper.orm("contact", contact);
+          mapper.orm("likes", likes);
+          mapper.orm("skills", skills);
+          mapper.orm("skillList",  skills);
     }
 };
 
