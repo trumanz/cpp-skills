@@ -1,5 +1,5 @@
 #include "jsoncpp_orm.h"
-
+using namespace cpporm;
 
 int Mapper::get(Json::Value json, int*){
       return json.asInt();

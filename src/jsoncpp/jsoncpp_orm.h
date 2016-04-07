@@ -9,12 +9,24 @@
 #include <jsoncpp/json/json.h>
 #include <assert.h>
 #include <list>
-#if 0
-template <typename T>
-class Field : public boost::shared_prt<T>
+#include <boost/shared_ptr.hpp>
+#include <stdexcept>
+
+namespace  cpporm {
+
+class CppOrmNotFoundException : public std::runtime_error
 {
+   public:
+    CppOrmNotFoundException(std::string const& node_name)
+        : runtime_error(node_name + " not found")
+    { }
+    
+    CppOrmNotFoundException(const CppOrmNotFoundException& e, std::string const& node_name)
+        : runtime_error(node_name + "." + e.what())
+
+    { }
+    
 };
-#endif
 
 //TODO is_encode not used, just for decode
 class Mapper {
@@ -26,9 +38,19 @@ public:
 
 
     template<typename T>
-    void orm(std::string name, T& v){
+    void orm(std::string name, boost::shared_ptr<T>& v, bool optional = true){
         //printf("filed %s\n", name.c_str());
-         v = get(json[name], (T*)0);
+         Json::Value jv = json[name];
+         if(!jv.isNull()) {
+             try {
+                T e = get(json[name], (T*)0);
+                v =  boost::shared_ptr<T>(new T(e));
+             } catch (CppOrmNotFoundException e) {
+                throw CppOrmNotFoundException(e, name);
+             }
+         } else if(!optional) {
+              throw CppOrmNotFoundException(name);
+         }
     }
 
 private:
@@ -89,3 +111,4 @@ public:
 };
 
 
+}
