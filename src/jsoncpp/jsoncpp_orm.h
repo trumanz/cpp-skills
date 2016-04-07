@@ -60,8 +60,14 @@ private:
             std::list<T> v;
             //printf("list\n");
             for(int i = 0; i  < json.size(); i++) {
+                 try { 
                  T e = get(json[i], &e);
                  v.push_back(e);
+                 } catch  (CppOrmNotFoundException e) {
+                    char buf[20];
+                    snprintf(buf, 19, "[%d]", i);
+                    throw CppOrmNotFoundException(e, buf);
+                 }
             }
             return v;
     }
@@ -94,7 +100,7 @@ protected:
 template<typename T>
 class JsonORM{
 public:
-    T* get(std::istream &is){
+    boost::shared_ptr<T> get(std::istream &is){
          T* e = new T;
          Json::Value root;
          Json::Reader reader;
@@ -106,7 +112,7 @@ public:
              Mapper mapper(root, false);
              e->setORM(mapper);
          }
-         return e;
+         return boost::shared_ptr<T>(e);
     }
 };
 

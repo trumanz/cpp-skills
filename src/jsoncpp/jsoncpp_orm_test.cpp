@@ -64,7 +64,7 @@ public:
 TEST(JsonROM, baisc){
 
      std::ifstream ifs("./sample_data/me.json",  std::ifstream::in);
-     Me* me = JsonORM<Me>().get(ifs);
+     boost::shared_ptr<Me> me = JsonORM<Me>().get(ifs);
      ASSERT_EQ(*me->name ,"truman");
      ASSERT_EQ(*me->age ,30);
 
@@ -87,7 +87,6 @@ TEST(JsonROM, baisc){
      ASSERT_EQ(*skills->back().grade, 0);
 };
 
-
 class Me2 {
 public:
     boost::shared_ptr<int> not_existed;
@@ -101,7 +100,7 @@ TEST(JsonROM, not_exist){
    
      try {
        std::ifstream ifs("./sample_data/me.json",  std::ifstream::in);
-       Me2* me = JsonORM<Me2>().get(ifs);
+       boost::shared_ptr<Me2> me = JsonORM<Me2>().get(ifs);
      }  catch ( CppOrmNotFoundException e) {
              ASSERT_EQ(std::string("not_existed not found"), e.what());
      }
@@ -129,9 +128,9 @@ public:
 TEST(JsonROM, not_exist2){
      try {
        std::ifstream ifs("./sample_data/me.json",  std::ifstream::in);
-       Me3* me = JsonORM<Me3>().get(ifs);
+       boost::shared_ptr<Me3> me = JsonORM<Me3>().get(ifs);
      }  catch ( CppOrmNotFoundException e) {
              printf("%s\n", e.what());
-             ASSERT_EQ(std::string("skills.language_not_exist not found"), e.what());
+             ASSERT_EQ(std::string("skills.[0].language_not_exist not found"), e.what());
      }
 };
