@@ -9,8 +9,12 @@
 #include <jsoncpp/json/json.h>
 #include <assert.h>
 #include <list>
-
-
+#if 0
+template <typename T>
+class Field : public boost::shared_prt<T>
+{
+};
+#endif
 
 //TODO is_encode not used, just for decode
 class Mapper {
@@ -20,6 +24,27 @@ public:
         this->is_encode = is_encode;
     }
 
+
+    template<typename T>
+    void orm(std::string name, T& v){
+        //printf("filed %s\n", name.c_str());
+         v = get(json[name], (T*)0);
+    }
+
+private:
+    //For std::list type
+    template<typename T>
+    std::list<T> get(Json::Value json, std::list<T>* dummy){
+            std::list<T> v;
+            //printf("list\n");
+            for(int i = 0; i  < json.size(); i++) {
+                 T e = get(json[i], &e);
+                 v.push_back(e);
+            }
+            return v;
+    }
+
+    //For Class type
     template<typename T>
     T get(Json::Value json, T* dummy){
        T e;
@@ -30,20 +55,6 @@ public:
 
     int get(Json::Value json, int*);
     std::string get(Json::Value json, std::string *);
-
-
-    template<typename T>
-    void orm(std::string name, T& v){
-         v = get(json[name], &v);
-    }
-
-    template<typename T>
-    void orm(std::string name, std::list<T>& v){
-            for(int i = 0; i  < json[name].size(); i++) {
-                 T e = get(json[name][i], &e);
-                 v.push_back(e);
-            }
-    }
 
 private:
     Json::Value json;

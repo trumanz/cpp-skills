@@ -55,7 +55,6 @@ public:
           mapper.orm("contact", contact);
           mapper.orm("likes", likes);
           mapper.orm("skills", skills);
-          mapper.orm("skillList",  skills);
     }
 };
 
