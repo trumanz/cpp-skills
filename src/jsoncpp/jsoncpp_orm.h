@@ -22,7 +22,7 @@ class CppOrmNotFoundException : public std::runtime_error
     { }
     
     CppOrmNotFoundException(const CppOrmNotFoundException& e, std::string const& node_name)
-        : runtime_error(node_name + "." + e.what())
+        : runtime_error(node_name + e.what())
 
     { }
     
@@ -46,10 +46,10 @@ public:
                 T e = get(json[name], (T*)0);
                 v =  boost::shared_ptr<T>(new T(e));
              } catch (CppOrmNotFoundException e) {
-                throw CppOrmNotFoundException(e, name);
+                throw CppOrmNotFoundException(e, std::string(".") + name);
              }
          } else if(!optional) {
-              throw CppOrmNotFoundException(name);
+              throw CppOrmNotFoundException(std::string(".") + name);
          }
     }
 

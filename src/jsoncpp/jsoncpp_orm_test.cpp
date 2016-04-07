@@ -10,16 +10,6 @@
 #include "jsoncpp_orm.h"
 
 using namespace cpporm;
-#if 0
-class Skill : public JsonObj {
-public:
-    std::string language;
-protected:
-    void setORM(Mapper &mapper){
-          mapper.orm("language", language);
-    }
-};
-#endif
 
 class Contact {
 public:
@@ -102,7 +92,7 @@ TEST(JsonROM, not_exist){
        std::ifstream ifs("./sample_data/me.json",  std::ifstream::in);
        boost::shared_ptr<Me2> me = JsonORM<Me2>().get(ifs);
      }  catch ( CppOrmNotFoundException e) {
-             ASSERT_EQ(std::string("not_existed not found"), e.what());
+             ASSERT_EQ(std::string(".not_existed not found"), e.what());
      }
 };
 
@@ -131,6 +121,6 @@ TEST(JsonROM, not_exist2){
        boost::shared_ptr<Me3> me = JsonORM<Me3>().get(ifs);
      }  catch ( CppOrmNotFoundException e) {
              printf("%s\n", e.what());
-             ASSERT_EQ(std::string("skills.[0].language_not_exist not found"), e.what());
+             ASSERT_EQ(std::string(".skills[0].language_not_exist not found"), e.what());
      }
 };
