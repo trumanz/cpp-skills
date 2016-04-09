@@ -64,7 +64,7 @@ public:
 
 private: //for std container type
     template<typename T>
-    void get(Json::Value json, std::list<T>* e){
+    void get(const Json::Value& json, std::list<T>* e){
             //printf("list\n");
             for(int i = 0; i  < json.size(); i++) {
                  try { 
@@ -80,13 +80,13 @@ private: //for std container type
     }
 private: // for class type
     template<typename T>
-    void get(Json::Value json, T* e){
+    void get(const Json::Value& json, T* e){
        Mapper mapper(json, false);
        e->setORM(mapper);
     } 
 private:  //for basic type
-    void get(Json::Value json, int*);
-    void get(Json::Value json, std::string *);
+    void get(const Json::Value& json, int*);
+    void get(const Json::Value& json, std::string *);
 
 private:
     Json::Value json;
