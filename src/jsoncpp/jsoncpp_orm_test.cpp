@@ -14,8 +14,8 @@ using namespace cpporm;
 class Contact {
 public:
     Contact(){}
-    boost::shared_ptr<std::string> email;
-    boost::shared_ptr<std::string> phone;
+    std::string email;
+    std::string phone;
     void setORM(Mapper &mapper){
           mapper.orm("email", email);
           mapper.orm("phone", phone);
@@ -25,8 +25,8 @@ public:
 
 class Skill {
 public:
-    boost::shared_ptr<std::string> language;
-    boost::shared_ptr<int> grade;
+    std::string language;
+    int grade;
     void setORM(Mapper &mapper) {
           mapper.orm("language", language);
           mapper.orm("grade", grade);
@@ -35,19 +35,19 @@ public:
 
 class Me {
 public:
-    boost::shared_ptr<std::string> name;
-    boost::shared_ptr<int> age;
-    boost::shared_ptr<Contact> contact;
-    boost::shared_ptr<std::list<std::string> > likes;
-    boost::shared_ptr<std::list<Skill> > skills;
-    boost::shared_ptr<int> not_existed;
+    std::string name; //basic type
+    int age;  //
+    Contact contact; // class object
+    std::list<std::string>  likes;  // std list
+    std::list<Skill>  skills; // class list
+    boost::shared_ptr<int>  value_not_exist; //optional not exist
     void setORM(Mapper &mapper){
           mapper.orm("name", name);
           mapper.orm("age", age);
           mapper.orm("contact", contact);
           mapper.orm("likes", likes);
           mapper.orm("skills", skills);
-          mapper.orm("not_existed", not_existed);
+          mapper.orm("value_not_exist",  value_not_exist);
     }
 };
 
@@ -55,72 +55,81 @@ TEST(JsonROM, baisc){
 
      std::ifstream ifs("./sample_data/me.json",  std::ifstream::in);
      boost::shared_ptr<Me> me = JsonORM<Me>().get(ifs);
-     ASSERT_EQ(*me->name ,"truman");
-     ASSERT_EQ(*me->age ,30);
+     //basic type
+     ASSERT_EQ(me->name ,"truman");
+     ASSERT_EQ(me->age ,30);
 
-     ASSERT_EQ(me->not_existed.get() , (int*)NULL);
+     //optional 
+     ASSERT_EQ(me->value_not_exist.get() , (int*)NULL);
 
-     boost::shared_ptr< std::list<std::string> > likes = me->likes;
-     ASSERT_EQ(likes->size(), 2);
-     ASSERT_EQ(likes->front(), "Batman");
-     ASSERT_EQ(likes->back(), "Superman");
+     //std string list
+     std::list<std::string>  likes = me->likes;
+     ASSERT_EQ(likes.size(), 2);
+     ASSERT_EQ(likes.front(), "Batman");
+     ASSERT_EQ(likes.back(), "Superman");
 
-     boost::shared_ptr<Contact> contact = me->contact;
-     ASSERT_EQ(*contact->email, "@com");
-     ASSERT_EQ(*contact->phone, "123456");
+      //  class  object
+     Contact contact = me->contact;
+     ASSERT_EQ(contact.email, "@com");
+     ASSERT_EQ(contact.phone, "123456");
 
-     boost::shared_ptr<std::list<Skill> > skills = me->skills;
-     ASSERT_EQ(skills->size(), 2);
-     ASSERT_EQ(*skills->front().language, "c++");
-     ASSERT_EQ(*skills->front().grade, 7);
-     ASSERT_EQ(*skills->back().language, "R");
-     ASSERT_EQ(*skills->back().grade, 0);
+     // class list
+     std::list<Skill>  skills = me->skills;
+     ASSERT_EQ(skills.size(), 2);
+     ASSERT_EQ(skills.front().language, "c++");
+     ASSERT_EQ(skills.front().grade, 7);
+     ASSERT_EQ(skills.back().language, "R");
+     ASSERT_EQ(skills.back().grade, 0);
 };
 
 class Me2 {
 public:
-    boost::shared_ptr<int> not_existed;
+    int  not_existed;
     void setORM(Mapper &mapper){
-          mapper.orm("not_existed", not_existed, false);
+          mapper.orm("not_existed", not_existed);
     }
    
 };
 
-TEST(JsonROM, not_exist){
-   
+TEST(JsonROM, child_not_exist_message){
+     std::string message;
      try {
        std::ifstream ifs("./sample_data/me.json",  std::ifstream::in);
        boost::shared_ptr<Me2> me = JsonORM<Me2>().get(ifs);
      }  catch ( CppOrmNotFoundException e) {
-             ASSERT_EQ(std::string(".not_existed not found"), e.what());
+             message =  e.what();
      }
+     ASSERT_EQ(".not_existed not found", message);
 };
 
 
 class Skill2 {
 public:
-    boost::shared_ptr<std::string> language;
+    std::string language;
     boost::shared_ptr<int> grade;
     void setORM(Mapper &mapper) {
-          mapper.orm("language_not_exist", language, false);
+          mapper.orm("language_not_exist", language);
     }
 };
 
 class Me3 {
 public:
-    boost::shared_ptr<std::string> name;
-    boost::shared_ptr<std::list<Skill2> > skills;
+    std::string name;
+    std::list<Skill2>  skills;
     void setORM(Mapper &mapper){
           mapper.orm("name", name);
           mapper.orm("skills", skills);
     }
 };
-TEST(JsonROM, not_exist2){
+
+
+TEST(JsonROM, child_child_not_exist_message){
+     std::string message;
      try {
        std::ifstream ifs("./sample_data/me.json",  std::ifstream::in);
        boost::shared_ptr<Me3> me = JsonORM<Me3>().get(ifs);
      }  catch ( CppOrmNotFoundException e) {
-             printf("%s\n", e.what());
-             ASSERT_EQ(std::string(".skills[0].language_not_exist not found"), e.what());
+             message = e.what();
      }
+     ASSERT_EQ(".skills[0].language_not_exist not found", message);
 };

@@ -36,21 +36,31 @@ public:
         this->is_encode = is_encode;
     }
 
-
     template<typename T>
-    void orm(std::string name, boost::shared_ptr<T>& v, bool optional = true){
+    void orm(std::string name, T& v){
         //printf("filed %s\n", name.c_str());
          Json::Value jv = json[name];
          if(!jv.isNull()) {
              try {
-                T e = get(json[name], (T*)0);
-                v =  boost::shared_ptr<T>(new T(e));
+                T e = get(jv, (T*)0);
+                v =  e;
              } catch (CppOrmNotFoundException e) {
                 throw CppOrmNotFoundException(e, std::string(".") + name);
              }
-         } else if(!optional) {
+         } else  {
               throw CppOrmNotFoundException(std::string(".") + name);
          }
+    }
+
+    template<typename T>
+    void orm(std::string name, boost::shared_ptr<T>& v){
+        //printf("filed %s\n", name.c_str());
+         Json::Value jv = json[name];
+         if(!jv.isNull()) {
+             T  e;
+             orm(name, e);
+             v = boost::shared_ptr<T>(new T(e));
+         } 
     }
 
 private:
