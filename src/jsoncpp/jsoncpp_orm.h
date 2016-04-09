@@ -37,7 +37,7 @@ public:
     }
 
     template<typename T>
-    void orm(std::string name, T& v){
+    void orm(const std::string& name, T& v){
         //printf("filed %s\n", name.c_str());
          Json::Value jv = json[name];
          if(!jv.isNull()) {
@@ -52,7 +52,7 @@ public:
     }
 
     template<typename T>
-    void orm(std::string name, boost::shared_ptr<T>& v){
+    void orm(const std::string& name, boost::shared_ptr<T>& v){
         //printf("filed %s\n", name.c_str());
          Json::Value jv = json[name];
          if(!jv.isNull()) {
@@ -62,16 +62,15 @@ public:
          } 
     }
 
-private:
-    //For std::list type
+private: //for std container type
     template<typename T>
     void get(Json::Value json, std::list<T>* e){
             //printf("list\n");
             for(int i = 0; i  < json.size(); i++) {
                  try { 
-                 T tmp;
-                 get(json[i], &tmp);
-                 e->push_back(tmp);
+                    T tmp;
+                    get(json[i], &tmp);
+                    e->push_back(tmp);
                  } catch  (CppOrmNotFoundException e) {
                     char buf[20];
                     snprintf(buf, 19, "[%d]", i);
@@ -79,14 +78,13 @@ private:
                  }
             }
     }
-
-    //For Class type
+private: // for class type
     template<typename T>
     void get(Json::Value json, T* e){
        Mapper mapper(json, false);
        e->setORM(mapper);
     } 
-
+private:  //for basic type
     void get(Json::Value json, int*);
     void get(Json::Value json, std::string *);
 
