@@ -42,8 +42,7 @@ public:
          Json::Value jv = json[name];
          if(!jv.isNull()) {
              try {
-                T e = get(jv, (T*)0);
-                v =  e;
+                get(jv, &v);
              } catch (CppOrmNotFoundException e) {
                 throw CppOrmNotFoundException(e, std::string(".") + name);
              }
@@ -66,33 +65,30 @@ public:
 private:
     //For std::list type
     template<typename T>
-    std::list<T> get(Json::Value json, std::list<T>* dummy){
-            std::list<T> v;
+    void get(Json::Value json, std::list<T>* e){
             //printf("list\n");
             for(int i = 0; i  < json.size(); i++) {
                  try { 
-                 T e = get(json[i], &e);
-                 v.push_back(e);
+                 T tmp;
+                 get(json[i], &tmp);
+                 e->push_back(tmp);
                  } catch  (CppOrmNotFoundException e) {
                     char buf[20];
                     snprintf(buf, 19, "[%d]", i);
                     throw CppOrmNotFoundException(e, buf);
                  }
             }
-            return v;
     }
 
     //For Class type
     template<typename T>
-    T get(Json::Value json, T* dummy){
-       T e;
+    void get(Json::Value json, T* e){
        Mapper mapper(json, false);
-       e.setORM(mapper);
-       return e;
+       e->setORM(mapper);
     } 
 
-    int get(Json::Value json, int*);
-    std::string get(Json::Value json, std::string *);
+    void get(Json::Value json, int*);
+    void get(Json::Value json, std::string *);
 
 private:
     Json::Value json;
