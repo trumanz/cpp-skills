@@ -25,10 +25,8 @@ public:
 
 class Skill {
 public:
-    std::string language;
     int grade;
     void setORM(Mapper &mapper) {
-          mapper.orm("language", language);
           mapper.orm("grade", grade);
     }
 };
@@ -39,7 +37,7 @@ public:
     int age;  //
     Contact contact; // class object
     std::list<std::string>  likes;  // std list
-    std::list<Skill>  skills; // class list
+    std::map<std::string, Skill>  skills; // class list
     boost::shared_ptr<int>  value_not_exist; //optional not exist
     void setORM(Mapper &mapper){
           mapper.orm("name", name);
@@ -74,12 +72,10 @@ TEST(JsonROM, baisc){
      ASSERT_EQ(contact.phone, "123456");
 
      // class list
-     std::list<Skill>  skills = me->skills;
+     std::map<std::string,  Skill>  skills = me->skills;
      ASSERT_EQ(skills.size(), 2);
-     ASSERT_EQ(skills.front().language, "c++");
-     ASSERT_EQ(skills.front().grade, 7);
-     ASSERT_EQ(skills.back().language, "R");
-     ASSERT_EQ(skills.back().grade, 0);
+     ASSERT_EQ(skills["c++"].grade, 7);
+     ASSERT_EQ(skills["R"].grade, 0);
 };
 
 class Me2 {
@@ -115,7 +111,7 @@ public:
 class Me3 {
 public:
     std::string name;
-    std::list<Skill2>  skills;
+    std::map<std::string, Skill2>  skills;
     void setORM(Mapper &mapper){
           mapper.orm("name", name);
           mapper.orm("skills", skills);
@@ -131,5 +127,5 @@ TEST(JsonROM, child_child_not_exist_message){
      }  catch ( CppOrmNotFoundException e) {
              message = e.what();
      }
-     ASSERT_EQ(".skills[0].language_not_exist not found", message);
+     ASSERT_EQ(".skills.R.language_not_exist not found", message);
 };

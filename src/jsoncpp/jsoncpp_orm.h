@@ -28,6 +28,15 @@ class CppOrmNotFoundException : public std::runtime_error
     
 };
 
+class CppOrmParseException : public std::runtime_error
+{
+   public:
+     CppOrmParseException(std::string const& node_name)
+        : runtime_error(node_name + " errror")
+    { }
+    
+};
+
 //TODO is_encode not used, just for decode
 class Mapper {
 public:
@@ -37,8 +46,8 @@ public:
     }
 
     template<typename T>
-    void orm(const std::string& name, T& v){
-        //printf("filed %s\n", name.c_str());
+    void orm(const std::string& name, T& v, const char *default_value = NULL){
+         printf("filed %s\n", name.c_str());
          Json::Value jv = json[name];
          if(!jv.isNull()) {
              try {
@@ -52,7 +61,7 @@ public:
     }
 
     template<typename T>
-    void orm(const std::string& name, boost::shared_ptr<T>& v){
+    void orm(const std::string& name, boost::shared_ptr<T>& v, const char *default_value = NULL){
         //printf("filed %s\n", name.c_str());
          Json::Value jv = json[name];
          if(!jv.isNull()) {
@@ -65,7 +74,9 @@ public:
 private: //for std container type
     template<typename T>
     void get(const Json::Value& json, std::list<T>* e){
-            //printf("list\n");
+            if(!json.isArray()) {
+                throw CppOrmParseException("TODO");
+            }
             for(int i = 0; i  < json.size(); i++) {
                  try { 
                     T tmp;
@@ -76,6 +87,22 @@ private: //for std container type
                     snprintf(buf, 19, "[%d]", i);
                     throw CppOrmNotFoundException(e, buf);
                  }
+            }
+    }
+    template<typename T>
+    void get(const Json::Value& json, std::map<std::string, T>* e){
+            if(!json.isObject()) {
+                throw CppOrmParseException("TODO");
+            }
+            Json::Value::Members keys = json.getMemberNames();
+            for(Json::Value::Members::iterator it = keys.begin(); it != keys.end(); it++) {
+                try { 
+                    T tmp;
+                    get(json[*it], &tmp);
+                    (*e)[*it] = tmp;
+                } catch  (CppOrmNotFoundException e) {
+                   throw CppOrmNotFoundException(e, std::string(".") + *it);
+                }
             }
     }
 private: // for class type
@@ -105,7 +132,7 @@ template<typename T>
 class JsonORM{
 public:
     boost::shared_ptr<T> get(std::istream &is){
-         T* e = new T;
+          T* e = NULL;
          Json::Value root;
          Json::Reader reader;
          bool parsingSuccessful = reader.parse(is, root);
@@ -113,6 +140,7 @@ public:
          if(!parsingSuccessful) {
            printf("Failed to parse, %s\n", reader.getFormatedErrorMessages().c_str());
          } else {
+             e = new T;
              Mapper mapper(root, false);
              e->setORM(mapper);
          }

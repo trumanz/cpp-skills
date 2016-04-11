@@ -16,11 +16,12 @@
 		"Ericsson",
 		"EMC"
 	],
-	"skills": [{
-		"language": "c++",
-		"grade": 7
-	}, {
-		"language": "R",
-		"grade": 0
-	}]
+	"skills": {
+		"c++" : {
+		   "grade": 7
+                },
+		"R" : {
+		   "grade": 0
+                }
+	}
 }
