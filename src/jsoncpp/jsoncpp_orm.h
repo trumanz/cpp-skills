@@ -14,25 +14,19 @@
 
 namespace  cpporm {
 
-class CppOrmNotFoundException : public std::runtime_error
+class CppOrmException : public std::runtime_error
 {
    public:
-    CppOrmNotFoundException(std::string const& node_name)
-        : runtime_error(node_name + " not found")
+    CppOrmException(std::string const& node_name, const std::string base_msg)
+        : runtime_error(node_name + " "  + base_msg)
     { }
     
-    CppOrmNotFoundException(const CppOrmNotFoundException& e, std::string const& node_name)
+    CppOrmException(const std::string base_msg)
+        : runtime_error(std::string(" ")  + base_msg)
+    { }
+    CppOrmException(const CppOrmException& e, std::string const& node_name)
         : runtime_error(node_name + e.what())
 
-    { }
-    
-};
-
-class CppOrmParseException : public std::runtime_error
-{
-   public:
-     CppOrmParseException(std::string const& node_name)
-        : runtime_error(node_name + " errror")
     { }
     
 };
@@ -52,11 +46,11 @@ public:
          if(!jv.isNull()) {
              try {
                 get(jv, &v);
-             } catch (CppOrmNotFoundException e) {
-                throw CppOrmNotFoundException(e, std::string(".") + name);
+             } catch (CppOrmException e) {
+                throw CppOrmException(e, std::string(".") + name);
              }
          } else  {
-              throw CppOrmNotFoundException(std::string(".") + name);
+              throw CppOrmException(std::string(".") + name, "not found");
          }
     }
 
@@ -75,24 +69,24 @@ private: //for std container type
     template<typename T>
     void get(const Json::Value& json, std::list<T>* e){
             if(!json.isArray()) {
-                throw CppOrmParseException("TODO");
+                throw CppOrmException("should be a list");
             }
             for(int i = 0; i  < json.size(); i++) {
                  try { 
                     T tmp;
                     get(json[i], &tmp);
                     e->push_back(tmp);
-                 } catch  (CppOrmNotFoundException e) {
+                 } catch  (CppOrmException e) {
                     char buf[20];
                     snprintf(buf, 19, "[%d]", i);
-                    throw CppOrmNotFoundException(e, buf);
+                    throw CppOrmException(e, buf);
                  }
             }
     }
     template<typename T>
     void get(const Json::Value& json, std::map<std::string, T>* e){
             if(!json.isObject()) {
-                throw CppOrmParseException("TODO");
+                throw CppOrmException("shoulbe be a object");
             }
             Json::Value::Members keys = json.getMemberNames();
             for(Json::Value::Members::iterator it = keys.begin(); it != keys.end(); it++) {
@@ -100,8 +94,8 @@ private: //for std container type
                     T tmp;
                     get(json[*it], &tmp);
                     (*e)[*it] = tmp;
-                } catch  (CppOrmNotFoundException e) {
-                   throw CppOrmNotFoundException(e, std::string(".") + *it);
+                } catch  (CppOrmException e) {
+                   throw CppOrmException(e, std::string(".") + *it);
                 }
             }
     }

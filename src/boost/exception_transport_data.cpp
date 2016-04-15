@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "gtest/gtest.h"
 #include <boost/exception/all.hpp>
+#include <list>
 
 
 
@@ -12,6 +13,16 @@ static void f() {
     BOOST_THROW_EXCEPTION(boost::unknown_exception());
 }
 #endif
+
+
+struct XExc : std::exception
+{
+   public:
+      std::string x;
+      std::list<int>  y;
+      virtual ~XExc() _GLIBCXX_USE_NOEXCEPT {   };
+
+};
 
 
 struct Info{
@@ -41,6 +52,15 @@ struct MyException : virtual boost::exception, virtual std::exception
 };
 
 TEST(boost_exception, diagnostic) {
+   
+    try {  
+      XExc x = XExc();
+      x.x = "tesst";
+      throw x;
+    } catch (XExc &e){
+       printf("%s\n", e.x.c_str());
+    }
+
     int code = 0;
     std::string msg = "";
     try {
@@ -57,6 +77,7 @@ TEST(boost_exception, diagnostic) {
        throw MyException<int>(5);
     } catch (MyException<int> &e) {
         code = *e.get();
+        printf("%s\n", e.what());
     }
     ASSERT_EQ(5, code);
 
