@@ -130,9 +130,10 @@ public:
          Json::Value root;
          Json::Reader reader;
          bool parsingSuccessful = reader.parse(is, root);
-    
+   
          if(!parsingSuccessful) {
            printf("Failed to parse, %s\n", reader.getFormatedErrorMessages().c_str());
+           throw  CppOrmException(reader.getFormatedErrorMessages());
          } else {
              e = new T;
              Mapper mapper(root, false);

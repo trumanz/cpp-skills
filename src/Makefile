@@ -6,6 +6,7 @@ CFLAGS += -fopenmp
 LDFLAGS = -L./  -lgtest  -lpthread 
 LDFLAGS +=  -lmordor
 LDFLAGS +=  -lboost_system -lboost_thread  -lboost_regex 
+LDFLAGS +=  -lboost_date_time
 LDFLAGS +=  -lcrypto 
 LDFLAGS +=  -lsqlite3 
 LDFLAGS +=  -ljsoncpp
