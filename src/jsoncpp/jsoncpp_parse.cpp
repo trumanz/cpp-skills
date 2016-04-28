@@ -28,6 +28,9 @@ TEST(jsoncpp, parse) {
    ASSERT_EQ("Eastsoft", root["work_experience"][0].asString());
    ASSERT_EQ("EMC",      root["work_experience"][3].asString());
 
+   printf("name: %s", root["name"].toStyledString().c_str());
+   printf("experience: %s", root["work_experience"].toStyledString().c_str());
+
 }
 #if 0
 TEST(jsoncpp, parse_not_exist) {
