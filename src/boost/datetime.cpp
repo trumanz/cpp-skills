@@ -75,7 +75,27 @@ TEST(boost_datetime, posix_time_parse_format) {
 
    str =  tf.format(pt);
    EXPECT_EQ("2004-03-21 12:45:33", str);
-    
+
+}
+
+TEST(boost_datetime, posix_time_duration) {
+
+   using namespace boost::posix_time;
+   StrTime tf("%Y-%m-%d %H:%M:%S");
+   int ret;
+   ptime pt1;
+   ptime pt2;
+   time_duration td;
+
+   ret = tf.parser("2000-01-01 00:00:00", &pt1);
+   EXPECT_EQ(0, ret);
+
+   ret = tf.parser("2000-01-02 20:00:00", &pt2);
+   EXPECT_EQ(0, ret);
+
+   td = pt2 - pt1;
+ 
+   std::cout <<  td << "\n";
 
 }
 
