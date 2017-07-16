@@ -4,7 +4,7 @@ BASE_DIR=$(pwd)/3pp
 [ -d $BASE_DIR ] || mkdir $BASE_DIR
 
 INSTALL_DIR=$BASE_DIR/installdir
-mkdir  $INSTALL_DIR
+#mkdir  $INSTALL_DIR
 
 mordor_lib(){
    if [ -d mordor ]; then
@@ -22,9 +22,9 @@ mordor_lib(){
 }
 
 gtest(){
-   if [ -d googletest ]; then
-     echo "user donloaded googletest"
-   else
+   #if [ -d googletest ]; then
+   #  echo "user donloaded googletest"
+   #else
      git clone https://github.com/google/googletest.git  \
      && cd googletest \
      && cmake  -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_DIR \
@@ -32,28 +32,24 @@ gtest(){
      if [ $? != 0 ]; then
         exit $?
      fi
-  fi
+  #fi
 }
 
 thrift() {
-   if [ -d thrift ]; then
-     echo "user donloaded thrift"
-   else
-      git clone https://github.com/apache/thrift.git \
-      && cd thrift &&  git checkout  0.9.3 \
+      #git clone https://github.com/apache/thrift.git \
+      cd thrift &&  git checkout  0.9.3 \
       && ./bootstrap.sh &&  ./configure --prefix=$INSTALL_DIR \
       && make -j4 && make install
       if [ $? != 0 ]; then
         echo "Warning, TODO, fix this "
       fi
-   fi
 }
 
-cd $BASE_DIR
-mordor_lib
+#cd $BASE_DIR
+#mordor_lib
 
-cd $BASE_DIR
-gtest
+#cd $BASE_DIR
+#gtest
 
 cd $BASE_DIR
 thrift
