@@ -19,45 +19,51 @@ struct employee
   int id;
   std::string name;
   int age;
-  
   employee(int id_, std::string name_, int age_): id(id_), name(name_), age(age_) {}
-
 };
 
-
-struct id{};
-struct name{};
-struct age{};
+struct id{}; struct name{}; struct age{};
 
 typedef multi_index_container<
         employee,
         indexed_by<
-           //sequenced<>,
            hashed_unique< tag<id>, BOOST_MULTI_INDEX_MEMBER(employee, int, id) >,
            ordered_non_unique< tag<name>, BOOST_MULTI_INDEX_MEMBER(employee, std::string, name) >,
            ordered_non_unique< tag<age>, BOOST_MULTI_INDEX_MEMBER(employee, int, age) > >
 > employee_set;
 
-
-TEST(boost_multi_index, hashed_unique_search_and_erase) {
+static employee_set getEmployeeSet(){
    employee_set es;
    es.insert(employee(0,"A", 31) );
    es.insert(employee(1,"B", 32) );
-   es.insert(employee(2,"C", 32) );
+   es.insert(employee(2,"C", 12) );
+   es.insert(employee(3,"D", 31) );
+   es.insert(employee(4,"E", 29) );
+   return es;
+}
 
-   employee_set::iterator it;
-   //search id=1, and got it
-   it =   es.get<id>().find(1);
+TEST(boost_multi_index, unique_search_and_erase) {
+
+   employee_set es = getEmployeeSet();
+   employee_set::iterator it = es.get<id>().find(1);
    EXPECT_EQ(1, it->id);
    EXPECT_EQ("B", it->name);
-
    //erase it
    es.erase(it);
-
    //then, it dose not exist
-   it =   es.get<id>().find(1);
+   it =  es.get<id>().find(1);
    EXPECT_EQ(it, es.end());
+}
 
+TEST(boost_multi_index, group_by_age) {
+   employee_set es = getEmployeeSet();
+   std::string y; 
+   for( boost::multi_index::index<employee_set, age>::type::iterator it = es.get<age>().begin();
+              it != es.get<age>().end(); it = es.get<age>().equal_range(it->age).second ){
+         std::cout  <<  it->name << "\n";
+         y = y+ it->name;
+   }
+   EXPECT_EQ(y, "CEAB");
 }
 
 TEST(boost_multi_index, ordered_non_unique_search_between) {
