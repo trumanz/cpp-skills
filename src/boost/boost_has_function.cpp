@@ -15,7 +15,7 @@ struct TypeHasMemberFunction{
 
 struct TypeNonMemberFunction {
     TypeNonMemberFunction(){
-           x = "TypeNonMemberFunction"
+           x = "TypeNonMemberFunction";
     }
     std::string x;
 };
@@ -46,15 +46,15 @@ public:
 template<typename T>
 std::string getString(T x)
 {
-    typedef typename boost::mpl::if_c<has_member_function_toString<T, int>::value, MemberFunctonCaller, OutFunctionCaller>::type T;
+    typedef typename boost::mpl::if_c<has_member_function_toString<T, std::string>::value, MemberFunctonCaller, OutFunctionCaller>::type CallerT;
     //std::cout <<typeid(x).name()<< "\n";
     //std::cout << has_member_function_toString<T, int>::value   << "\n";
     //std::cout <<typeid(t1).name()<< "\n";
     //std::cout << t1().call(x) <<"\n";
-    return  T().call(x);
+    return  CallerT().call(x);
 }
 
-TEST(boost_any_test, baisc_type) {
+TEST(boost_has_function, choose_call) {
      std::string x1 = getString(TypeHasMemberFunction());
      std::string x2 = getString(TypeNonMemberFunction());
 
