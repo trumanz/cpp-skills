@@ -37,9 +37,9 @@ gtest(){
 
 thrift() {
       git clone https://github.com/apache/thrift.git \
-      cd thrift &&  git checkout  0.9.3 \
+      && cd thrift &&  git checkout  0.9.3 \
       && ./bootstrap.sh &&  ./configure --prefix=$INSTALL_DIR \
-      && make -j4 && make install
+      && make  && make install
       if [ $? != 0 ]; then
         echo "Warning, TODO, fix this "
       fi
