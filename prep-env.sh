@@ -14,7 +14,7 @@ mordor_lib(){
       && cd  mordor  \
       && mkdir install_dir \
       && ./buildtools/build.sh  --prefix=$INSTALL_DIR \
-      && make -j2 && make install
+      && make  && make install
       if [ $? != 0 ]; then
         exit $?
       fi
@@ -28,7 +28,7 @@ gtest(){
      git clone https://github.com/google/googletest.git  \
      && cd googletest \
      && cmake  -DCMAKE_INSTALL_PREFIX:PATH=$INSTALL_DIR \
-     && make -j2 && make  install
+     && make  && make  install
      if [ $? != 0 ]; then
         exit $?
      fi
@@ -38,8 +38,8 @@ gtest(){
 thrift() {
       git clone https://github.com/apache/thrift.git \
       && cd thrift &&  git checkout  0.9.3 \
-      && ./bootstrap.sh &&  ./configure --with-php=no  --with-erlang=no --with-go=no --with-lua=no --with-nodejs=no --prefix=$INSTALL_DIR \
-      && make -j2 && make install
+      && ./bootstrap.sh &&  ./configure --with-php=no  --with-erlang=no --with-go=no --with-lua=no --with-nodejs=no --with-ruby=no --with-python=no --with-java=no --prefix=$INSTALL_DIR \
+      && make  && make install
       if [ $? != 0 ]; then
         echo "Warning, TODO, fix this "
       fi
