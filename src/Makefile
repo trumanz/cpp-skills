@@ -4,13 +4,13 @@ CFLAGS = -c  -g -O0 -I./  -Wall
 CFLAGS += -fopenmp
 
 LDFLAGS = -L./  -lgtest  -lpthread 
-LDFLAGS +=  -lmordor
 LDFLAGS +=  -lboost_system -lboost_thread  -lboost_regex 
 LDFLAGS +=  -lboost_date_time
 LDFLAGS +=  -lcrypto 
 LDFLAGS +=  -lsqlite3 
 LDFLAGS +=  -ljsoncpp
-LDFLAGS +=  -lthrift
+#LDFLAGS +=  -lthrift
+#LDFLAGS +=  -lmordor
 LDFLAGS += -fopenmp
 
 

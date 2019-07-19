@@ -11,11 +11,6 @@
 
 #include "gtest/gtest.h"
 
-#include "mordor/iomanager.h"
-#include "mordor/log.h"
-#include "mordor/socket.h"
-#include "mordor/streams/socket.h"
-#include "mordor/streams/transfer.h"
 
 
 #include <boost/bind.hpp>

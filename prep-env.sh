@@ -45,11 +45,9 @@ thrift() {
       fi
 }
 
-cd $BASE_DIR
-mordor_lib
+#cd $BASE_DIR
+#mordor_lib
 
-cd $BASE_DIR
-gtest
 
-cd $BASE_DIR
-thrift
+#cd $BASE_DIR
+#thrift
