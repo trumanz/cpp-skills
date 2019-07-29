@@ -1,13 +1,23 @@
 sudo: required
 dist: xenial
-
 language: cpp
-
 compiler: gcc
-
 before_script:
--  ./install-dependency.sh
--  ./prep-env.sh
-
+- "./install-dependency.sh"
+- "./prep-env.sh"
 script:
--  ./run-all.sh
+- "./run-all.sh"
+addons:
+  coverity_scan:
+    project:
+      name: trumanz/cpp-skills
+      version: 1.0
+      description: My cpp project
+    notification_email: truman.ck.zhou@gmail.com
+    build_command_prepend: cd src
+    build_command: make
+    branch_pattern: master
+
+env:
+  global:
+    secure: pBue5bv3tuatw9ul9LkZ83IXa9UkZwOkePoEiWj9g9GMGFuIo9mgnaHkuXgThqQqtrLCj0wiirN/2D6C3I+V7CqFpNOD0QCRG4qShR33du/GZkVSLkYtDCVMc5TAwYLsf+Q1Mdy1W2n7n4J/fCsY3Is9wpsq+T5JjWOGgJtUj4fhe77vJwO/noZhEqiVOfcRkU8lbEMp8Q6Op9NaoIqG93dF35KJ8o7JnDxgv9g0qSg5zAt38TXrskTPrD5cnfLgWGC8na/WsaXH2I688GEdypxSWJ+Sgu3cD3zcKXWuDMfoV9oLWw2kdIEsldfLJoHEBaWXpeH3/HWWKnOgmy7HdK6UlliMg8XUQ/fmEzrsR2SGOoG6wfTujpzpDW8Rut278WZKKfwLm0mQQQkhtMwcUuxl8TYwb4eOqBKfd2unfm6yyv3gKe5wPBrOiVu4l8ezXsdectx2yTAf7/1AFr3H8qny+WYdJjA19K+KszsxBoryLky//FN9tcNrf2MSd15j7oclouikIC1amoL/iOhITPKHqfxJQdwOgv38n1vHbFBu9AU5lP/kq29RigKZQFNClSOO4mh7cafopj5R7j+m3eKzycRtQqM27Y29uymOksPsbwsCceGDQfffx25QK7OAb2X+AeI4JGpB+Hnon0QnimeuLB7FIkafw8RAZTdEwpo=
