@@ -1,0 +1,3 @@
+[submodule "docker-dev-env/clion-remote"]
+	path = docker-dev-env/clion-remote
+	url = git@github.com:JetBrains/clion-remote.git
