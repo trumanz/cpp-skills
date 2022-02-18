@@ -25,15 +25,9 @@ static llvm::IRBuilder<> Builder(TheContext);
 static std::unique_ptr<llvm::Module> TheModule;
 static std::map<std::string, llvm::Value*> NamedValues;
 class ExprAST;
-std::unique_ptr<ExprAST> LogError(const char *Str) {
-    fprintf(stderr, "LogError: %s\n", Str);
-    return nullptr;
-}
+std::unique_ptr<ExprAST> LogError(const char *Str);
 
-llvm::Value* LogErrorV(const char *Str) {
-    LogError(Str);
-    return nullptr;
-}
+llvm::Value* LogErrorV(const char *Str);
 
 class ExprAST {
 public:
