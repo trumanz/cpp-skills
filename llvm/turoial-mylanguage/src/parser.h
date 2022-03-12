@@ -8,5 +8,6 @@
 void InitBinopPrecedence();
 void MainLoop();
 int getNextToken();
+extern std::istream* in_stream;
 
 #endif //TUROIAL_MYLANGUAGE_PARSER_H

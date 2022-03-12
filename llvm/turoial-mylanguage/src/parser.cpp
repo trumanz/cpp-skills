@@ -5,24 +5,22 @@
 #include <map>
 #include "AST.h"
 #include "lexer.h"
+#include <log4cplus/log4cplus.h>
 
 static std::unique_ptr<ExprAST> ParseExpression();
 static std::unique_ptr<ExprAST> ParseBinOpRHS(int ExprPrec,
                                               std::unique_ptr<ExprAST> LHS) ;
 
 
-
+static  auto rootLogger = log4cplus::Logger().getRoot();
 
 
 //auto LHS = std::make_unique<VariableExprAST>("x");
 //auto RHS = std::make_unique<VariableExprAST>("y");
+
 //auto Result = std::make_unique<BinaryExprAST>('+', std::move(LHS),
 //                                              std::move(RHS));
 
-static int CurTok;
-int getNextToken() {
-    return CurTok = gettok();
-}
 
 
 
@@ -31,49 +29,49 @@ std::unique_ptr<PrototypeAST> LogErrorP(const char *Str) {
     return nullptr;
 }
 
-static std::unique_ptr<ExprAST> ParseNumberExpr() {
-    auto Result = std::make_unique<NumberExprAST>(NumVal);
-    getNextToken();
+static std::unique_ptr<ExprAST> ParseNumberExpr(double num) {
+    auto Result = std::make_unique<NumberExprAST>(num);
+    Lexer::instance.gettok();
     return std::move(Result);
 }
 
 /// parenexpr ::= '(' experssion ')'
 static std::unique_ptr<ExprAST> ParseParenExpr() {
-    getNextToken(); // eat (.
+    Lexer::instance.gettok(); // eat (.
     auto V = ParseExpression();
     if(!V)
         return nullptr;
-    if(CurTok != ')')
+    if(Lexer::instance.CurTok != ')')
         return LogError("expected ')'");
-    getNextToken(); //eat ).
+    Lexer::instance.gettok(); //eat ).
     return V;
 }
 
 //// identifierexpr
 ///    ::= identifier
 ///    ::= identifier '(' experssion* ')'
-static std::unique_ptr<ExprAST> ParseIdentifierExpr() {
-    std::string IdName = IdentifierStr;
-    getNextToken(); //eat identifier.
-    if(CurTok != '(')
+static std::unique_ptr<ExprAST> ParseIdentifierExpr(std::string id) {
+    std::string IdName = id;
+    Lexer::instance.gettok(); //eat identifier.
+    if(Lexer::instance.CurTok != '(')
         return std::make_unique<VariableExprAST>(IdName);
     //Call.
-    getNextToken(); // eat (
+    Lexer::instance.gettok(); // eat (
     std::vector<std::unique_ptr<ExprAST>> Args;
-    if(CurTok != ')') {
+    if(Lexer::instance.CurTok != ')') {
         while(1) {
             if(auto Arg = ParseExpression())
                 Args.push_back(std::move(Arg));
             else
                 return nullptr;
-            if(CurTok == ')')
+            if(Lexer::instance.CurTok == ')')
                 break;
-            if(CurTok != ',')
+            if(Lexer::instance.CurTok != ',')
                 return LogError("Expected ')' or ',' in argument list" );
-            getNextToken();
+            Lexer::instance.gettok();
         }
     }
-    getNextToken(); //Eat the ')'
+    Lexer::instance.gettok(); //Eat the ')'
     return std::make_unique<CallExprAST>(IdName, std::move(Args));
 }
 
@@ -82,13 +80,13 @@ static std::unique_ptr<ExprAST> ParseIdentifierExpr() {
 ///  ::= numberexpr
 ///  ::= parenexpr
 static std::unique_ptr<ExprAST> ParsePrimary() {
-    switch(CurTok) {
+    switch(Lexer::instance.CurTok) {
         default:
             return LogError("unknown token when expecting an expression");
-        case tok_identifier:
-            return ParseIdentifierExpr();
-        case tok_number:
-            return ParseNumberExpr();
+        case Token::tok_identifier:
+            return ParseIdentifierExpr(Lexer::instance.currentValueAsId());
+        case Token::tok_number:
+            return ParseNumberExpr(Lexer::instance.currentValueAsDouble());
         case  '(':
             return ParseParenExpr();
     }
@@ -97,9 +95,9 @@ static std::unique_ptr<ExprAST> ParsePrimary() {
 static std::map<char, int> BinopPrecedence;
 
 static int GetTokPrecedence() {
-    if(!isascii(CurTok))
+    if(!isascii(Lexer::instance.CurTok))
         return -1;
-    int TokPrec = BinopPrecedence[CurTok];
+    int TokPrec = BinopPrecedence[Lexer::instance.CurTok];
     if(TokPrec <= 0) return -1;
     return TokPrec;
 }
@@ -119,8 +117,8 @@ static std::unique_ptr<ExprAST> ParseBinOpRHS(int ExprPrec,
         if(TokPrec < ExprPrec)
             return LHS;
 
-        int BinOp = CurTok;
-        getNextToken(); //eat binop
+        int BinOp = Lexer::instance.CurTok;
+        Lexer::instance.gettok(); //eat binop
         auto RHS = ParsePrimary();
         if(!RHS)
             return nullptr;
@@ -136,24 +134,24 @@ static std::unique_ptr<ExprAST> ParseBinOpRHS(int ExprPrec,
 }
 
 static std::unique_ptr<PrototypeAST> ParsePrototype() {
-    if(CurTok != tok_identifier)
+    if(Lexer::instance.CurTok != Token::tok_identifier)
         return LogErrorP("Expected function name in prototype");
-    std::string FnName = IdentifierStr;
-    getNextToken();
-    if(CurTok != '(')
+    std::string FnName = Lexer::instance.currentValueAsId();
+    Lexer::instance.gettok();
+    if(Lexer::instance.CurTok != '(')
         return LogErrorP("Expected '(' in prototype");
 
     std::vector<std::string> ArgNames;
-    while(getNextToken() == tok_identifier)
-        ArgNames.push_back(IdentifierStr);
-    if(CurTok != ')')
+    while(Lexer::instance.gettok() == Token::tok_identifier)
+        ArgNames.push_back(Lexer::instance.currentValueAsId());
+    if(Lexer::instance.CurTok != ')')
         return LogErrorP("Expected ')' in prototype");
-    getNextToken(); //eat ')'
+    Lexer::instance.gettok(); //eat ')'
     return std::make_unique<PrototypeAST>(FnName, std::move(ArgNames));
 }
 
 static std::unique_ptr<FunctionAST> ParseDefinition() {
-    getNextToken();
+    Lexer::instance.gettok();
     auto Proto = ParsePrototype();
     if(!Proto) return nullptr;
     if(auto E = ParseExpression())
@@ -162,7 +160,7 @@ static std::unique_ptr<FunctionAST> ParseDefinition() {
 }
 
 static std::unique_ptr<PrototypeAST> ParseExtern() {
-    getNextToken();
+    Lexer::instance.gettok();
     return ParsePrototype();
 }
 
@@ -182,7 +180,7 @@ static void HandleDefinition() {
     if(ParseDefinition()) {
         fprintf(stderr, "Parsed a function definition.\n");
     } else  {
-        getNextToken();
+        Lexer::instance.gettok();
     }
 }
 
@@ -190,7 +188,7 @@ static void HandleExtern() {
     if(ParseExtern()) {
         fprintf(stderr,  "Parsed an extern\n");
     } else {
-        getNextToken();
+        Lexer::instance.gettok();
     }
 }
 
@@ -198,7 +196,7 @@ static void HandleTopLevelExpression() {
     if(ParseTopLevelExpr()) {
         fprintf(stderr, "Parsed a top-level expr\n");
     } else {
-        getNextToken();
+        Lexer::instance.gettok();
     }
 }
 
@@ -216,21 +214,25 @@ BinopPrecedence['*'] = 40;  // highest.
 }
 
 
+
+
 void MainLoop() {
-    fprintf(stderr, "ready> ");
-    getNextToken();
+    //fprintf(stderr, "ready> ");
+    LOG4CPLUS_INFO_FMT(rootLogger, "ready>");
+    Lexer::instance.gettok();
     while(1) {
-        fprintf(stderr, "ready> ");
-        switch(CurTok) {
-            case tok_eof:
+        //LOG4CPLUS_INFO_FMT(rootLogger, "ready>");
+        LOG4CPLUS_INFO_FMT(rootLogger, "tooken %d", Lexer::instance.CurTok);
+        switch(Lexer::instance.CurTok) {
+            case Token::tok_eof:
                 return;
             case ';':
-                getNextToken();
+                Lexer::instance.gettok();
                 break;
-            case tok_def:
+            case Token::tok_def:
                 HandleDefinition();
                 break;
-            case tok_extern:
+            case Token::tok_extern:
                 HandleExtern();
                 break;
             default:

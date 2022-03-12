@@ -6,7 +6,7 @@
 #define TUROIAL_MYLANGUAGE_LEXER_H
 #include <string>
 
-enum Token {
+enum  Token {
     tok_eof = -1,
     //commands
     tok_def = -2,
@@ -14,12 +14,31 @@ enum Token {
     //primary
     tok_identifier = -4,
     tok_number = -5,
+    tok_char = -6,
  };
-extern std::string IdentifierStr;
-extern double NumVal;
+bool operator==(const Token& l, const char& r) ;
+bool operator!=(const Token& l, const char& r) ;
 
 
-int gettok();
+class Lexer {
+    Token gettok_imp();
+    double NumVal;
+    std::string IdentifierStr;
+    char char_val;
+public:
+    Token gettok();
+    Token CurTok;
+    double currentValueAsDouble() {
+        return NumVal;
+    }
+    std::string currentValueAsId() {
+        return IdentifierStr;
+    };
+    char currentValueAsChar() {
+        return this->char_val;
+    }
+    static Lexer instance;
+};
 
 
 #endif //TUROIAL_MYLANGUAGE_LEXER_H
