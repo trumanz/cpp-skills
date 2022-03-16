@@ -30,6 +30,7 @@ class Parser {
     void HandleExtern();
     void HandleTopLevelExpression();
     void InitBinopPrecedence();
+    std::unique_ptr<PrototypeAST> LogErrorP(const char *Str);
 public:
     Parser() {
         InitBinopPrecedence();

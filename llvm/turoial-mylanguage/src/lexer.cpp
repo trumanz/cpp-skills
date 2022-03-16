@@ -4,12 +4,13 @@
 
 #include "lexer.h"
 #include "AST.h"
+#include <log4cplus/log4cplus.h>
+static  auto rootLogger = log4cplus::Logger().getRoot();
+
 
 Lexer Lexer::instance;
 char Lexer::read_char() {
-     if(in_stream == nullptr) {
-         return read_char();
-     }
+     this->count_char++;
      return in_stream->get();
 }
 Token Lexer::gettok_imp(){
@@ -63,5 +64,6 @@ Token Lexer::gettok_imp(){
 
 Token Lexer::gettok() {
     CurTok =  gettok_imp();
+    LOG4CPLUS_DEBUG_FMT(rootLogger, "Curtok: %s", CurTok.toString().c_str());
     return CurTok;
 }

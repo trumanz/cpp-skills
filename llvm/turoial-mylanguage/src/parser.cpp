@@ -23,8 +23,12 @@ static  auto rootLogger = log4cplus::Logger().getRoot();
 
 
 
-std::unique_ptr<PrototypeAST> LogErrorP(const char *Str) {
-    LogError(Str);
+std::unique_ptr<PrototypeAST> Parser::LogErrorP(const char *Str) {
+
+    LOG4CPLUS_ERROR_FMT( rootLogger, "position %d, currentToken: %s,  %s",
+                         Lexer::instance.countChar(),
+                         Lexer::instance.CurTok.toString().c_str(),
+                         Str);
     return nullptr;
 }
 
@@ -135,6 +139,7 @@ std::unique_ptr<PrototypeAST> Parser::ParsePrototype() {
     if(Lexer::instance.CurTok != Token::tok_identifier)
         return LogErrorP("Expected function name in prototype");
     std::string FnName = Lexer::instance.CurTok.value.str;
+    LOG4CPLUS_DEBUG_FMT(rootLogger, "function name:%s", FnName.c_str());
     Lexer::instance.gettok();
     if(Lexer::instance.CurTok != '(')
         return LogErrorP("Expected '(' in prototype");
@@ -218,17 +223,20 @@ void Parser::parse(const std::string& expr)
     std::stringstream  ss;
     ss << expr;
     Lexer::instance.in_stream = &ss;
-    LOG4CPLUS_INFO_FMT(rootLogger, "Parse %s", expr.c_str());
+    LOG4CPLUS_INFO_FMT(rootLogger, "Start parse \"%s\"", expr.c_str());
     Lexer::instance.gettok();
-    while(1) {
+   // while(1)
+    {
         //LOG4CPLUS_INFO_FMT(rootLogger, "ready>");
-        LOG4CPLUS_INFO_FMT(rootLogger, "tooken %s",
+        LOG4CPLUS_INFO_FMT(rootLogger, "token %s",
                            Lexer::instance.CurTok.toString().c_str());
         switch(Lexer::instance.CurTok.token_type) {
             case Token::tok_eof:
                 return;
-            case ';':
-                Lexer::instance.gettok();
+            case Token::tok_char:
+                if(Lexer::instance.CurTok.value.c == ';') {
+                    Lexer::instance.gettok();
+                }
                 break;
             case Token::tok_def:
                 HandleDefinition();

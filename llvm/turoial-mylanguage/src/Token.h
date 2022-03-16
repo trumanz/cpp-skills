@@ -20,7 +20,6 @@ public:
     } value;
     Token(Type type = tok_eof) {
         this->token_type = type;
-        this->value.num = 0.0;
     }
     Token(double num) {
         this->token_type = tok_number;
@@ -46,17 +45,17 @@ public:
     std::string toString() const {
         switch(this->token_type) {
             case tok_eof:
-                return "eof";
+                return "tok_eof";
             case tok_def:
-                return "def";
+                return "tok_def";
             case tok_extern:
-                return "extern";
+                return "tok_extern";
             case tok_identifier:
-                return "identifier";
+                return "tok_identifier:'" + this->value.str + "'";
             case tok_number:
-                return "number";
+                return "tok_number";
             case tok_char:
-                return "char";
+                return std::string("tok_char'") + this->value.c + "'";
             default:
                 return "unknown";
         }
@@ -64,8 +63,15 @@ public:
 
 };
 inline bool operator==(const Token& a, const char& b){
-    return a.token_type == b;
+    return a.token_type == Token::tok_char &&
+           a.value.c == b;
 };
 inline bool operator!=(const Token& a, const char& b){
-    return a.token_type != b;
+     return !(a == b);
+};
+inline bool operator==(const Token& a, const Token::Type& b){
+    return a.token_type == b;
+};
+inline bool operator!=(const Token& a, const Token::Type& b){
+    return !(a == b);
 };
