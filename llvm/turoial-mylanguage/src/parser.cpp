@@ -2,8 +2,7 @@
 // Created by zck on 2021/12/5.
 //
 
-#include <map>
-#include "AST.h"
+
 #include "lexer.h"
 #include <log4cplus/log4cplus.h>
 #include  "parser.h"
@@ -29,14 +28,14 @@ std::unique_ptr<PrototypeAST> LogErrorP(const char *Str) {
     return nullptr;
 }
 
-static std::unique_ptr<ExprAST> ParseNumberExpr(double num) {
+std::unique_ptr<ExprAST> Parser::ParseNumberExpr(double num) {
     auto Result = std::make_unique<NumberExprAST>(num);
     Lexer::instance.gettok();
     return std::move(Result);
 }
 
 /// parenexpr ::= '(' experssion ')'
-static std::unique_ptr<ExprAST> ParseParenExpr() {
+std::unique_ptr<ExprAST> Parser::ParseParenExpr() {
     Lexer::instance.gettok(); // eat (.
     auto V = ParseExpression();
     if(!V)
@@ -50,7 +49,7 @@ static std::unique_ptr<ExprAST> ParseParenExpr() {
 //// identifierexpr
 ///    ::= identifier
 ///    ::= identifier '(' experssion* ')'
-static std::unique_ptr<ExprAST> ParseIdentifierExpr(std::string id) {
+std::unique_ptr<ExprAST> Parser::ParseIdentifierExpr(std::string id) {
     std::string IdName = id;
     Lexer::instance.gettok(); //eat identifier.
     if(Lexer::instance.CurTok != '(')
@@ -79,7 +78,7 @@ static std::unique_ptr<ExprAST> ParseIdentifierExpr(std::string id) {
 ///  ::= identifierexpr
 ///  ::= numberexpr
 ///  ::= parenexpr
-static std::unique_ptr<ExprAST> ParsePrimary() {
+std::unique_ptr<ExprAST> Parser::ParsePrimary() {
     switch(Lexer::instance.CurTok.token_type) {
         default:
             return LogError("unknown token when expecting an expression");
@@ -92,9 +91,8 @@ static std::unique_ptr<ExprAST> ParsePrimary() {
     }
 }
 
-static std::map<char, int> BinopPrecedence;
 
-static int GetTokPrecedence() {
+int Parser::GetTokPrecedence() {
     if(!isascii(Lexer::instance.CurTok.token_type))
         return -1;
     int TokPrec = BinopPrecedence[Lexer::instance.CurTok.token_type];
@@ -102,14 +100,14 @@ static int GetTokPrecedence() {
     return TokPrec;
 }
 
-static std::unique_ptr<ExprAST> ParseExpression() {
+std::unique_ptr<ExprAST> Parser::ParseExpression() {
     auto LHS = ParsePrimary();
     if(!LHS)
         return nullptr;
     return ParseBinOpRHS(0, std::move(LHS));
 }
 
-static std::unique_ptr<ExprAST> ParseBinOpRHS(int ExprPrec,
+std::unique_ptr<ExprAST> Parser::ParseBinOpRHS(int ExprPrec,
                                               std::unique_ptr<ExprAST> LHS) {
     while(1) {
         int TokPrec = GetTokPrecedence();
@@ -133,7 +131,7 @@ static std::unique_ptr<ExprAST> ParseBinOpRHS(int ExprPrec,
     }
 }
 
-static std::unique_ptr<PrototypeAST> ParsePrototype() {
+std::unique_ptr<PrototypeAST> Parser::ParsePrototype() {
     if(Lexer::instance.CurTok != Token::tok_identifier)
         return LogErrorP("Expected function name in prototype");
     std::string FnName = Lexer::instance.CurTok.value.str;
@@ -150,7 +148,7 @@ static std::unique_ptr<PrototypeAST> ParsePrototype() {
     return std::make_unique<PrototypeAST>(FnName, std::move(ArgNames));
 }
 
-static std::unique_ptr<FunctionAST> ParseDefinition() {
+std::unique_ptr<FunctionAST> Parser::ParseDefinition() {
     Lexer::instance.gettok();
     auto Proto = ParsePrototype();
     if(!Proto) return nullptr;
@@ -159,13 +157,13 @@ static std::unique_ptr<FunctionAST> ParseDefinition() {
     return nullptr;
 }
 
-static std::unique_ptr<PrototypeAST> ParseExtern() {
+std::unique_ptr<PrototypeAST> Parser::ParseExtern() {
     Lexer::instance.gettok();
     return ParsePrototype();
 }
 
 
-static std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
+std::unique_ptr<FunctionAST> Parser::ParseTopLevelExpr() {
     if(auto E = ParseExpression()) {
         auto Proto = std::make_unique<PrototypeAST>("", std::vector<std::string>());
         return std::make_unique<FunctionAST>(std::move(Proto), std::move(E));
@@ -176,7 +174,7 @@ static std::unique_ptr<FunctionAST> ParseTopLevelExpr() {
 //===----------------------------------===//
 // Top-Level parsing
 //===----------------------------------===//
-static void HandleDefinition() {
+void Parser::HandleDefinition() {
     if(ParseDefinition()) {
         fprintf(stderr, "Parsed a function definition.\n");
     } else  {
@@ -184,7 +182,7 @@ static void HandleDefinition() {
     }
 }
 
-static void HandleExtern() {
+void Parser::HandleExtern() {
     if(ParseExtern()) {
         LOG4CPLUS_INFO_FMT(rootLogger, "Parsed an extern");
     } else {
@@ -192,7 +190,7 @@ static void HandleExtern() {
     }
 }
 
-static void HandleTopLevelExpression() {
+void Parser::HandleTopLevelExpression() {
     if(ParseTopLevelExpr()) {
         LOG4CPLUS_INFO_FMT(rootLogger,"Parsed a top-level expr");
     } else {
@@ -203,7 +201,7 @@ static void HandleTopLevelExpression() {
 
 
 
-void InitBinopPrecedence() {
+void Parser::InitBinopPrecedence() {
 
 // Install standard binary operators.
 // 1 is lowest precedence.

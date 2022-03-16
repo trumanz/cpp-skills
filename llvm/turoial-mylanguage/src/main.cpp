@@ -21,9 +21,6 @@ void initLog() {
 int main() {
     //std::cout << "Hello, World!" << std::endl;
     initLog();
-
-    InitBinopPrecedence();
-
     Parser parser;
     parser.parse("def foo(x y) x+y+1 y;");
     return 0;
