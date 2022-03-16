@@ -6,7 +6,7 @@
 #include "AST.h"
 #include "lexer.h"
 #include <log4cplus/log4cplus.h>
-
+#include  "parser.h"
 static std::unique_ptr<ExprAST> ParseExpression();
 static std::unique_ptr<ExprAST> ParseBinOpRHS(int ExprPrec,
                                               std::unique_ptr<ExprAST> LHS) ;
@@ -80,13 +80,13 @@ static std::unique_ptr<ExprAST> ParseIdentifierExpr(std::string id) {
 ///  ::= numberexpr
 ///  ::= parenexpr
 static std::unique_ptr<ExprAST> ParsePrimary() {
-    switch(Lexer::instance.CurTok) {
+    switch(Lexer::instance.CurTok.token_type) {
         default:
             return LogError("unknown token when expecting an expression");
         case Token::tok_identifier:
-            return ParseIdentifierExpr(Lexer::instance.currentValueAsId());
+            return ParseIdentifierExpr(Lexer::instance.CurTok.value.str);
         case Token::tok_number:
-            return ParseNumberExpr(Lexer::instance.currentValueAsDouble());
+            return ParseNumberExpr(Lexer::instance.CurTok.value.num);
         case  '(':
             return ParseParenExpr();
     }
@@ -95,9 +95,9 @@ static std::unique_ptr<ExprAST> ParsePrimary() {
 static std::map<char, int> BinopPrecedence;
 
 static int GetTokPrecedence() {
-    if(!isascii(Lexer::instance.CurTok))
+    if(!isascii(Lexer::instance.CurTok.token_type))
         return -1;
-    int TokPrec = BinopPrecedence[Lexer::instance.CurTok];
+    int TokPrec = BinopPrecedence[Lexer::instance.CurTok.token_type];
     if(TokPrec <= 0) return -1;
     return TokPrec;
 }
@@ -117,7 +117,7 @@ static std::unique_ptr<ExprAST> ParseBinOpRHS(int ExprPrec,
         if(TokPrec < ExprPrec)
             return LHS;
 
-        int BinOp = Lexer::instance.CurTok;
+        int BinOp = Lexer::instance.CurTok.token_type;
         Lexer::instance.gettok(); //eat binop
         auto RHS = ParsePrimary();
         if(!RHS)
@@ -136,14 +136,14 @@ static std::unique_ptr<ExprAST> ParseBinOpRHS(int ExprPrec,
 static std::unique_ptr<PrototypeAST> ParsePrototype() {
     if(Lexer::instance.CurTok != Token::tok_identifier)
         return LogErrorP("Expected function name in prototype");
-    std::string FnName = Lexer::instance.currentValueAsId();
+    std::string FnName = Lexer::instance.CurTok.value.str;
     Lexer::instance.gettok();
     if(Lexer::instance.CurTok != '(')
         return LogErrorP("Expected '(' in prototype");
 
     std::vector<std::string> ArgNames;
     while(Lexer::instance.gettok() == Token::tok_identifier)
-        ArgNames.push_back(Lexer::instance.currentValueAsId());
+        ArgNames.push_back(Lexer::instance.CurTok.value.str);
     if(Lexer::instance.CurTok != ')')
         return LogErrorP("Expected ')' in prototype");
     Lexer::instance.gettok(); //eat ')'
@@ -186,7 +186,7 @@ static void HandleDefinition() {
 
 static void HandleExtern() {
     if(ParseExtern()) {
-        fprintf(stderr,  "Parsed an extern\n");
+        LOG4CPLUS_INFO_FMT(rootLogger, "Parsed an extern");
     } else {
         Lexer::instance.gettok();
     }
@@ -194,9 +194,10 @@ static void HandleExtern() {
 
 static void HandleTopLevelExpression() {
     if(ParseTopLevelExpr()) {
-        fprintf(stderr, "Parsed a top-level expr\n");
+        LOG4CPLUS_INFO_FMT(rootLogger,"Parsed a top-level expr");
     } else {
         Lexer::instance.gettok();
+
     }
 }
 
@@ -214,16 +215,18 @@ BinopPrecedence['*'] = 40;  // highest.
 }
 
 
-
-
-void MainLoop() {
-    //fprintf(stderr, "ready> ");
-    LOG4CPLUS_INFO_FMT(rootLogger, "ready>");
+void Parser::parse(const std::string& expr)
+{
+    std::stringstream  ss;
+    ss << expr;
+    Lexer::instance.in_stream = &ss;
+    LOG4CPLUS_INFO_FMT(rootLogger, "Parse %s", expr.c_str());
     Lexer::instance.gettok();
     while(1) {
         //LOG4CPLUS_INFO_FMT(rootLogger, "ready>");
-        LOG4CPLUS_INFO_FMT(rootLogger, "tooken %d", Lexer::instance.CurTok);
-        switch(Lexer::instance.CurTok) {
+        LOG4CPLUS_INFO_FMT(rootLogger, "tooken %s",
+                           Lexer::instance.CurTok.toString().c_str());
+        switch(Lexer::instance.CurTok.token_type) {
             case Token::tok_eof:
                 return;
             case ';':
@@ -241,5 +244,3 @@ void MainLoop() {
         }
     }
 }
-
-

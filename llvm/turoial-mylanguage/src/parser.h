@@ -6,8 +6,10 @@
 #define TUROIAL_MYLANGUAGE_PARSER_H
 
 void InitBinopPrecedence();
-void MainLoop();
 int getNextToken();
-extern std::istream* in_stream;
 
+class Parser {
+public:
+    void parse(const std::string& expr);
+};
 #endif //TUROIAL_MYLANGUAGE_PARSER_H

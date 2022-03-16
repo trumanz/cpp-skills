@@ -24,15 +24,8 @@ int main() {
 
     InitBinopPrecedence();
 
-    std::stringstream  ss;
-    ss << "def foo(x y) x+y+1 y;";
-    in_stream = &ss;
-    MainLoop();
-
-
+    Parser parser;
+    parser.parse("def foo(x y) x+y+1 y;");
     return 0;
-
-
-
 
 }
