@@ -86,20 +86,23 @@ std::unique_ptr<ExprAST> Parser::ParsePrimary() {
     switch(Lexer::instance.CurTok.token_type) {
         default:
             return LogError("unknown token when expecting an expression");
-        case Token::tok_identifier:
+        case Token::Type::tok_identifier:
             return ParseIdentifierExpr(Lexer::instance.CurTok.value.str);
-        case Token::tok_number:
+        case Token::Type::tok_number:
             return ParseNumberExpr(Lexer::instance.CurTok.value.num);
-        case  '(':
-            return ParseParenExpr();
+        case Token::Type::tok_char:
+            if ('(' == Lexer::instance.CurTok.value.c)
+              return ParseParenExpr();
     }
 }
 
 
 int Parser::GetTokPrecedence() {
-    if(!isascii(Lexer::instance.CurTok.token_type))
+    assert(Lexer::instance.CurTok.token_type ==  Token::Type::tok_char);
+    char char_val = Lexer::instance.CurTok.value.c;
+    if(!isascii(char_val))
         return -1;
-    int TokPrec = BinopPrecedence[Lexer::instance.CurTok.token_type];
+    int TokPrec = BinopPrecedence[char_val];
     if(TokPrec <= 0) return -1;
     return TokPrec;
 }
@@ -119,7 +122,7 @@ std::unique_ptr<ExprAST> Parser::ParseBinOpRHS(int ExprPrec,
         if(TokPrec < ExprPrec)
             return LHS;
 
-        int BinOp = Lexer::instance.CurTok.token_type;
+        int BinOp = Lexer::instance.CurTok.valueAsChar();
         Lexer::instance.gettok(); //eat binop
         auto RHS = ParsePrimary();
         if(!RHS)
@@ -136,7 +139,7 @@ std::unique_ptr<ExprAST> Parser::ParseBinOpRHS(int ExprPrec,
 }
 
 std::unique_ptr<PrototypeAST> Parser::ParsePrototype() {
-    if(Lexer::instance.CurTok != Token::tok_identifier)
+    if(Lexer::instance.CurTok != Token::Type::tok_identifier)
         return LogErrorP("Expected function name in prototype");
     std::string FnName = Lexer::instance.CurTok.value.str;
     LOG4CPLUS_DEBUG_FMT(rootLogger, "function name:%s", FnName.c_str());
@@ -145,7 +148,7 @@ std::unique_ptr<PrototypeAST> Parser::ParsePrototype() {
         return LogErrorP("Expected '(' in prototype");
 
     std::vector<std::string> ArgNames;
-    while(Lexer::instance.gettok() == Token::tok_identifier)
+    while(Lexer::instance.gettok() == Token::Type::tok_identifier)
         ArgNames.push_back(Lexer::instance.CurTok.value.str);
     if(Lexer::instance.CurTok != ')')
         return LogErrorP("Expected ')' in prototype");
@@ -170,8 +173,14 @@ std::unique_ptr<PrototypeAST> Parser::ParseExtern() {
 
 std::unique_ptr<FunctionAST> Parser::ParseTopLevelExpr() {
     if(auto E = ParseExpression()) {
-        auto Proto = std::make_unique<PrototypeAST>("", std::vector<std::string>());
-        return std::make_unique<FunctionAST>(std::move(Proto), std::move(E));
+        auto v = E->codegen();
+        std::string str;
+        llvm::raw_string_ostream rso(str);
+        v->print(rso, true);
+        LOG4CPLUS_DEBUG_FMT("%s", str.c_str());
+
+      //  auto Proto = std::make_unique<PrototypeAST>("", std::vector<std::string>());
+      //  return std::make_unique<FunctionAST>(std::move(Proto), std::move(E));
     }
     return nullptr;
 }
@@ -181,7 +190,7 @@ std::unique_ptr<FunctionAST> Parser::ParseTopLevelExpr() {
 //===----------------------------------===//
 void Parser::HandleDefinition() {
     if(ParseDefinition()) {
-        fprintf(stderr, "Parsed a function definition.\n");
+        LOG4CPLUS_DEBUG_FMT(rootLogger, "Parsed a function definition");
     } else  {
         Lexer::instance.gettok();
     }
@@ -222,8 +231,8 @@ void Parser::parse(const std::string& expr)
 {
     std::stringstream  ss;
     ss << expr;
-    Lexer::instance.in_stream = &ss;
-    LOG4CPLUS_INFO_FMT(rootLogger, "Start parse \"%s\"", expr.c_str());
+    Lexer::instance.setInput(&ss);
+    LOG4CPLUS_INFO_FMT(rootLogger, "Start parsing \"%s\"", expr.c_str());
     Lexer::instance.gettok();
    // while(1)
     {
@@ -231,17 +240,17 @@ void Parser::parse(const std::string& expr)
         LOG4CPLUS_INFO_FMT(rootLogger, "token %s",
                            Lexer::instance.CurTok.toString().c_str());
         switch(Lexer::instance.CurTok.token_type) {
-            case Token::tok_eof:
+            case Token::Type::tok_eof:
                 return;
-            case Token::tok_char:
+            case Token::Type::tok_char:
                 if(Lexer::instance.CurTok.value.c == ';') {
                     Lexer::instance.gettok();
                 }
                 break;
-            case Token::tok_def:
+            case Token::Type::tok_def:
                 HandleDefinition();
                 break;
-            case Token::tok_extern:
+            case Token::Type::tok_extern:
                 HandleExtern();
                 break;
             default:

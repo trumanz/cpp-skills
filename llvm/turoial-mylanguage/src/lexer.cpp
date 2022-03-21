@@ -14,7 +14,7 @@ char Lexer::read_char() {
      return in_stream->get();
 }
 Token Lexer::gettok_imp(){
-    static char LastChar = ' ';
+    //static char LastChar = ' ';
     //skip any whitespace
     while(std::isspace(LastChar)) {
         LastChar = read_char();
@@ -26,12 +26,12 @@ Token Lexer::gettok_imp(){
             IdentifierStr += LastChar;
         }
         if(IdentifierStr == "def") {
-            return Token::tok_def;
+            return Token::Type::tok_def;
         }
         if(IdentifierStr == "extern") {
-            return Token::tok_extern;
+            return Token::Type::tok_extern;
         }
-        return Token(Token::tok_identifier, IdentifierStr);
+        return Token(Token::Type::tok_identifier, IdentifierStr);
     }
 
     if(std::isdigit(LastChar) || LastChar == '.') {
@@ -53,7 +53,7 @@ Token Lexer::gettok_imp(){
     }
 
     if(LastChar == EOF) {
-        return Token::tok_eof;
+        return Token::Type::tok_eof;
     }
 
     char char_val = LastChar;
@@ -64,6 +64,6 @@ Token Lexer::gettok_imp(){
 
 Token Lexer::gettok() {
     CurTok =  gettok_imp();
-    LOG4CPLUS_DEBUG_FMT(rootLogger, "Curtok: %s", CurTok.toString().c_str());
+    LOG4CPLUS_DEBUG_FMT(rootLogger, "gettok Curtok: %s", CurTok.toString().c_str());
     return CurTok;
 }

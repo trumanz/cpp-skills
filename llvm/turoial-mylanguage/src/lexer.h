@@ -11,10 +11,16 @@ class Lexer {
     Token gettok_imp();
     char read_char();
     int count_char = 0;
+    std::istream* in_stream = nullptr;
+    char LastChar;
 public:
     Token CurTok;
     Token gettok();
-    std::istream* in_stream = nullptr;
+    void setInput(std::istream* in) {
+        this->in_stream = in;
+        this->LastChar = ' ';
+        this->count_char = 0;
+    }
     int countChar() const  { return this->count_char;}
     static Lexer instance;
 };
