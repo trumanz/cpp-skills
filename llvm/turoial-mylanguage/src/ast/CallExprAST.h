@@ -18,11 +18,13 @@ public:
     llvm::Value * codegen() override  {
        llvm::Function *CalleeF = TheModule->getFunction(this->Callee);
        if(!CalleeF) {
-           return LogErrorV("Unknown function referenced : "  );
+           LogErrorV("Unknown function referenced : "  );
+           return nullptr;
        }
 
        if(CalleeF->arg_size() != this->Args.size()) {
-           return LogErrorV("Incorrect #arugments passed");
+           LogErrorV("Incorrect #arugments passed");
+           return nullptr;
        }
 
        std::vector<llvm::Value*> ArgsV;

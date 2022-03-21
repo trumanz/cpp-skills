@@ -44,8 +44,10 @@ std::unique_ptr<ExprAST> Parser::ParseParenExpr() {
     auto V = ParseExpression();
     if(!V)
         return nullptr;
-    if(Lexer::instance.CurTok != ')')
-        return LogError("expected ')'");
+    if(Lexer::instance.CurTok != ')') {
+        LOG4CPLUS_ERROR_FMT(rootLogger, "expected ')'");
+        return nullptr;
+    }
     Lexer::instance.gettok(); //eat ).
     return V;
 }
@@ -69,8 +71,10 @@ std::unique_ptr<ExprAST> Parser::ParseIdentifierExpr(std::string id) {
                 return nullptr;
             if(Lexer::instance.CurTok == ')')
                 break;
-            if(Lexer::instance.CurTok != ',')
-                return LogError("Expected ')' or ',' in argument list" );
+            if(Lexer::instance.CurTok != ',') {
+                LOG4CPLUS_ERROR_FMT(rootLogger, "Expected ')' or ',' in argument list" );
+                return nullptr;
+            }
             Lexer::instance.gettok();
         }
     }
@@ -85,7 +89,8 @@ std::unique_ptr<ExprAST> Parser::ParseIdentifierExpr(std::string id) {
 std::unique_ptr<ExprAST> Parser::ParsePrimary() {
     switch(Lexer::instance.CurTok.token_type) {
         default:
-            return LogError("unknown token when expecting an expression");
+            LOG4CPLUS_ERROR_FMT(rootLogger,"unknown token when expecting an expression");
+            return nullptr;
         case Token::Type::tok_identifier:
             return ParseIdentifierExpr(Lexer::instance.CurTok.value.str);
         case Token::Type::tok_number:
@@ -94,6 +99,7 @@ std::unique_ptr<ExprAST> Parser::ParsePrimary() {
             if ('(' == Lexer::instance.CurTok.value.c)
               return ParseParenExpr();
     }
+    return nullptr;
 }
 
 
@@ -177,7 +183,7 @@ std::unique_ptr<FunctionAST> Parser::ParseTopLevelExpr() {
         std::string str;
         llvm::raw_string_ostream rso(str);
         v->print(rso, true);
-        LOG4CPLUS_DEBUG_FMT("%s", str.c_str());
+        LOG4CPLUS_DEBUG_FMT(rootLogger, "%s", str.c_str());
 
       //  auto Proto = std::make_unique<PrototypeAST>("", std::vector<std::string>());
       //  return std::make_unique<FunctionAST>(std::move(Proto), std::move(E));

@@ -6,7 +6,7 @@
 #define TUROIAL_MYLANGUAGE_PARSER_H
 #include <map>
 #include <map>
-#include "AST.h"
+#include "ast/AST.h"
 
 class Parser {
     std::map<char, int> BinopPrecedence;

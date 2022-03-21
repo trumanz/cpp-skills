@@ -11,8 +11,7 @@ include_directories(${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 
 
-file(GLOB SRC_FILES
-        "src/*.h"
+file(GLOB_RECURSE SRC_FILES
         "src/*.cpp"
         )
 
@@ -25,6 +24,3 @@ target_link_libraries(turoial_mylanguage  log4cplus::log4cplus)
 llvm_map_components_to_libnames(llvm_libs support core irreader)
 # Link against LLVM libraries
 target_link_libraries( turoial_mylanguage ${llvm_libs})
-
-
-#add_executable(turoial_mylanguage main.cpp src/AST.cpp src/AST.h src/parser.cpp src/parser.h src/lexer.cpp src/lexer.h)

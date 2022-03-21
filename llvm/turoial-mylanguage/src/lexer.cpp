@@ -3,7 +3,7 @@
 //
 
 #include "lexer.h"
-#include "AST.h"
+#include "ast/AST.h"
 #include <log4cplus/log4cplus.h>
 static  auto rootLogger = log4cplus::Logger().getRoot();
 
