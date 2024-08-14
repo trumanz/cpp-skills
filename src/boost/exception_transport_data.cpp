@@ -20,7 +20,7 @@ struct XExc : std::exception
    public:
       std::string x;
       std::list<int>  y;
-      virtual ~XExc() _GLIBCXX_USE_NOEXCEPT {   };
+      virtual ~XExc() {   };
 
 };
 
